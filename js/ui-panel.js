@@ -1,0 +1,268 @@
+// Side panel: buttons, status, strength slider, branch info, move list
+import { COLOR_TEXT, COLOR_TEXT_DIM, COLOR_BTN_ACTIVE } from './constants.js';
+import { GameNode } from './game-tree.js';
+
+export class UIPanel {
+  constructor(container, state, moveHandler) {
+    this.container = container;
+    this.state = state;
+    this.moveHandler = moveHandler;
+    this._build();
+
+    state.on('boardChanged', () => this._updateStatus());
+    state.on('treeChanged', () => this._updateMoveList());
+  }
+
+  _build() {
+    this.container.innerHTML = '';
+    this.container.classList.add('panel');
+
+    // Title
+    const title = document.createElement('div');
+    title.className = 'panel-title';
+    title.textContent = 'branChess {\u2657}';
+    this.container.appendChild(title);
+
+    // Status
+    this.statusEl = document.createElement('div');
+    this.statusEl.className = 'panel-status';
+    this.container.appendChild(this.statusEl);
+
+    // Tree container (will be populated by TreeView)
+    this.treeContainer = document.createElement('div');
+    this.treeContainer.className = 'tree-container';
+    this.container.appendChild(this.treeContainer);
+
+    // Branch info + move list
+    this.branchInfo = document.createElement('div');
+    this.branchInfo.className = 'branch-info';
+    this.container.appendChild(this.branchInfo);
+
+    this.moveList = document.createElement('div');
+    this.moveList.className = 'move-list';
+    this.container.appendChild(this.moveList);
+
+    // Buttons
+    const btnArea = document.createElement('div');
+    btnArea.className = 'btn-area';
+
+    // Row 1: Back / Forward
+    const row1 = this._btnRow();
+    this._addBtn(row1, '\u2190 Back', () => this.state.goBack(), 'half');
+    this._addBtn(row1, 'Fwd \u2192', () => this.state.goForward(), 'half');
+    btnArea.appendChild(row1);
+
+    // Row 2: Engine Move / Paste PGN
+    const row2 = this._btnRow();
+    this._addBtn(row2, 'Engine Move', () => this.moveHandler.requestEngineCalculation(), 'half');
+    this._addBtn(row2, 'Paste PGN', () => this._pastePGN(), 'half');
+    btnArea.appendChild(row2);
+
+    // Full-width buttons
+    this._addBtn(btnArea, 'Save Position', () => this._openSaveDialog());
+    this._addBtn(btnArea, 'Load Position', () => this._openLoadDialog());
+    this._addBtn(btnArea, 'Setup Board', () => this._enterSetupMode());
+    this._addBtn(btnArea, 'New Game', () => this.state.newGame());
+
+    this.container.appendChild(btnArea);
+
+    // Strength slider
+    this.sliderArea = document.createElement('div');
+    this.sliderArea.className = 'slider-area';
+    this._buildSlider();
+    this.container.appendChild(this.sliderArea);
+
+    // Keyboard hints
+    const hints = document.createElement('div');
+    hints.className = 'hints';
+    hints.textContent = 'U:undo \u2190\u2192\u2191\u2193:nav Space:engine Ctrl+V:pgn';
+    this.container.appendChild(hints);
+
+    this._updateStatus();
+    this._updateMoveList();
+  }
+
+  _btnRow() {
+    const row = document.createElement('div');
+    row.className = 'btn-row';
+    return row;
+  }
+
+  _addBtn(parent, label, onClick, size = 'full') {
+    const btn = document.createElement('button');
+    btn.className = `panel-btn ${size === 'half' ? 'btn-half' : 'btn-full'}`;
+    btn.textContent = label;
+    btn.addEventListener('click', onClick);
+    parent.appendChild(btn);
+    return btn;
+  }
+
+  _buildSlider() {
+    this.sliderArea.innerHTML = '';
+    const { elo } = this.state.strengthParams();
+
+    this.sliderLabel = document.createElement('div');
+    this.sliderLabel.className = 'slider-label';
+    this.sliderLabel.textContent = `Engine: ~${elo} ELO`;
+    this.sliderArea.appendChild(this.sliderLabel);
+
+    this.slider = document.createElement('input');
+    this.slider.type = 'range';
+    this.slider.min = '0';
+    this.slider.max = '100';
+    this.slider.value = this.state.strength;
+    this.slider.className = 'strength-slider';
+
+    this.slider.addEventListener('input', () => {
+      this.state.strength = parseInt(this.slider.value);
+      const { elo } = this.state.strengthParams();
+      this.sliderLabel.textContent = `Engine: ~${elo} ELO`;
+      this._updateSliderTrack();
+    });
+
+    this.sliderArea.appendChild(this.slider);
+    this._updateSliderTrack();
+  }
+
+  _updateSliderTrack() {
+    const t = this.state.strength / 100;
+    let r, g, b;
+    if (t < 0.5) {
+      r = Math.round(220 - t * 200);
+      g = Math.round(80 + t * 300);
+      b = 60;
+    } else {
+      r = Math.round(120 - (t - 0.5) * 160);
+      g = Math.round(230 - (t - 0.5) * 60);
+      b = Math.round(60 + (t - 0.5) * 40);
+    }
+    const color = `rgb(${r},${g},${b})`;
+    const pct = this.state.strength + '%';
+    this.slider.style.background = `linear-gradient(to right, ${color} 0%, ${color} ${pct}, #3c3a37 ${pct}, #3c3a37 100%)`;
+  }
+
+  _updateStatus() {
+    const s = this.state.status;
+    this.statusEl.textContent = s;
+    if (s.includes('Your')) {
+      this.statusEl.style.color = 'rgb(120,220,120)';
+    } else if (s.toLowerCase().includes('think') || s.toLowerCase().includes('calculat')) {
+      this.statusEl.style.color = 'rgb(220,180,80)';
+    } else if (s.toLowerCase().includes('mate') || s.toLowerCase().includes('draw')) {
+      this.statusEl.style.color = 'rgb(220,80,80)';
+    } else {
+      this.statusEl.style.color = COLOR_TEXT;
+    }
+    this._updateMoveList();
+  }
+
+  _updateMoveList() {
+    const state = this.state;
+    const depth = state.currentNode.depth();
+    const moveNum = Math.ceil(depth / 2);
+    let info = `Ply ${depth}`;
+    if (moveNum > 0) info = `Move ${moveNum}, ply ${depth}`;
+
+    const parent = state.currentNode.parent;
+    if (parent && parent.children.length > 1) {
+      const idx = parent.children.indexOf(state.currentNode) + 1;
+      info += `  |  Branch ${idx}/${parent.children.length}`;
+    }
+    this.branchInfo.textContent = info;
+
+    // Move list
+    const path = state.currentNode.pathFromRoot();
+    const moves = path.slice(1).filter(n => n.san).map(n => n.san);
+    const lines = [];
+    for (let i = 0; i < moves.length; i += 2) {
+      const num = Math.floor(i / 2) + 1;
+      let line = `${num}. ${moves[i]}`;
+      if (i + 1 < moves.length) line += `  ${moves[i + 1]}`;
+      lines.push(line);
+    }
+    this.moveList.textContent = lines.slice(-8).join('\n');
+  }
+
+  async _pastePGN() {
+    if (this.state.engineThinking) return;
+    try {
+      const text = await navigator.clipboard.readText();
+      if (!text.trim()) {
+        this.state.status = 'Clipboard empty';
+        this.state.emit('boardChanged');
+        return;
+      }
+      this._importPGN(text);
+    } catch {
+      this.state.status = 'Clipboard access denied';
+      this.state.emit('boardChanged');
+    }
+  }
+
+  _importPGN(pgnText) {
+    const state = this.state;
+    const chess = state.chess;
+
+    // Reset and replay
+    chess.reset();
+    try {
+      chess.loadPgn(pgnText);
+    } catch {
+      state.status = 'Invalid PGN';
+      state.emit('boardChanged');
+      return;
+    }
+
+    const history = chess.history({ verbose: true });
+    chess.reset();
+
+    state.treeRoot = new GameNode(chess.fen());
+    state.invalidateTreeLayout();
+    state.treeScrollX = 0;
+    state.treeScrollY = 0;
+    state.treeZoom = 1;
+
+    let node = state.treeRoot;
+    for (const move of history) {
+      const result = chess.move({ from: move.from, to: move.to, promotion: move.promotion });
+      const child = node.addChild(
+        { from: move.from, to: move.to, promotion: move.promotion },
+        chess.fen(),
+        result.san
+      );
+      node = child;
+    }
+
+    state.currentNode = node;
+    state.lastMove = history.length ? { from: history[history.length - 1].from, to: history[history.length - 1].to } : null;
+    state.selectedSq = null;
+    state.legalDests = new Set();
+    state.gameOver = false;
+    state.checkGameOver();
+
+    if (!state.gameOver) {
+      const turn = chess.turn() === 'w' ? 'White' : 'Black';
+      state.status = `PGN loaded (${history.length} moves) \u2014 ${turn} to move`;
+    }
+    state.invalidateTreeLayout();
+    state.emit('boardChanged');
+  }
+
+  _openSaveDialog() {
+    this.state.emit('openSaveDialog');
+  }
+
+  _openLoadDialog() {
+    this.state.emit('openLoadDialog');
+  }
+
+  _enterSetupMode() {
+    if (this.state.engineThinking) return;
+    this.state.setupMode = true;
+    this.state.setupPiece = null;
+    this.state.setupTurn = this.state.chess.turn();
+    this.state.selectedSq = null;
+    this.state.legalDests = new Set();
+    this.state.emit('setupModeChanged');
+  }
+}

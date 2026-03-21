@@ -1,0 +1,340 @@
+/* branChess web — dark theme, board + panel layout */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@400&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #302e2b;
+  --panel-bg: #27251e;
+  --text: #dcdcdc;
+  --text-dim: #969696;
+  --btn: #505050;
+  --btn-hover: #646464;
+  --btn-text: #e6e6e6;
+  --btn-active: #3c7850;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, sans-serif;
+  overflow: hidden;
+}
+
+#app {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* Board */
+#board {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(8, 1fr);
+  aspect-ratio: 1;
+  height: 100vh;
+  max-height: 100vw;
+  flex-shrink: 0;
+}
+
+.square {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Pieces */
+.piece {
+  font-size: calc(100vh / 8 * 0.72);
+  line-height: 1;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.piece-white {
+  color: #fff;
+  text-shadow:
+    -1px -1px 0 #000, 1px -1px 0 #000,
+    -1px  1px 0 #000, 1px  1px 0 #000;
+}
+
+.piece-black {
+  color: #000;
+  text-shadow:
+    -1px -1px 0 rgba(255,255,255,0.7), 1px -1px 0 rgba(255,255,255,0.7),
+    -1px  1px 0 rgba(255,255,255,0.7), 1px  1px 0 rgba(255,255,255,0.7);
+}
+
+.piece-ghost {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(100vh / 8 * 0.72);
+  line-height: 1;
+}
+
+/* Highlights */
+.highlight-selected::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(130,151,105,0.7);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.highlight-last::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(205,210,106,0.55);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.highlight-check::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(235,64,52,0.63);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.highlight-legal::before {
+  content: '';
+  position: absolute;
+  width: 25%;
+  height: 25%;
+  border-radius: 50%;
+  background: rgba(20,85,30,0.47);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.highlight-legal-capture::before {
+  content: '';
+  position: absolute;
+  width: 85%;
+  height: 85%;
+  border-radius: 50%;
+  border: 4px solid rgba(20,85,30,0.35);
+  background: transparent;
+  pointer-events: none;
+  z-index: 3;
+}
+
+#board.hide-hints .highlight-legal::before,
+#board.hide-hints .highlight-legal-capture::before {
+  display: none;
+}
+
+/* Labels */
+.label {
+  position: absolute;
+  font-size: 0.7em;
+  font-weight: 600;
+  pointer-events: none;
+  z-index: 4;
+  font-family: 'Inter', sans-serif;
+}
+
+.label-file {
+  bottom: 1px;
+  right: 3px;
+}
+
+.label-rank {
+  top: 1px;
+  left: 3px;
+}
+
+/* Panel (right side) */
+#panel, #setup-panel {
+  flex: 1;
+  min-width: 240px;
+  max-width: 320px;
+  background: var(--panel-bg);
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  overflow-y: auto;
+}
+
+#setup-panel {
+  display: none;
+}
+
+.panel-title {
+  font-size: 16px;
+  font-weight: 600;
+  padding: 4px 6px;
+  color: var(--text);
+}
+
+.panel-status {
+  font-size: 13px;
+  padding: 2px 6px 6px;
+  font-weight: 600;
+}
+
+.tree-container {
+  flex: 1;
+  min-height: 120px;
+  background: #1e1c1a;
+  border-radius: 4px;
+  margin: 4px 0;
+  overflow: hidden;
+  cursor: grab;
+}
+
+.tree-svg {
+  display: block;
+}
+
+.branch-info {
+  font-size: 12px;
+  color: var(--text-dim);
+  padding: 4px 6px;
+  font-family: 'Inter', sans-serif;
+}
+
+.move-list {
+  font-size: 11px;
+  color: var(--text-dim);
+  padding: 2px 6px 8px;
+  font-family: 'JetBrains Mono', monospace;
+  white-space: pre-wrap;
+  line-height: 1.5;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+/* Buttons */
+.btn-area {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 0;
+}
+
+.btn-row {
+  display: flex;
+  gap: 6px;
+}
+
+.panel-btn {
+  background: var(--btn);
+  color: var(--btn-text);
+  border: none;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.panel-btn:hover { background: var(--btn-hover); }
+
+.btn-half { flex: 1; }
+.btn-full { width: 100%; }
+
+.btn-active {
+  background: var(--btn-active);
+}
+.btn-active:hover {
+  background: #508c64;
+}
+
+/* Strength slider */
+.slider-area {
+  padding: 6px;
+}
+
+.slider-label {
+  font-size: 12px;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.strength-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: #3c3a37;
+  outline: none;
+}
+
+.strength-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #dcdcdc;
+  border: 2px solid #3c3c3c;
+  cursor: pointer;
+}
+
+.strength-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #dcdcdc;
+  border: 2px solid #3c3c3c;
+  cursor: pointer;
+}
+
+.strength-slider::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(to right,
+    var(--slider-color, #64b450) 0%,
+    var(--slider-color, #64b450) var(--val, 70%),
+    #3c3a37 var(--val, 70%),
+    #3c3a37 100%
+  );
+}
+
+/* Hints bar */
+.hints {
+  font-size: 10px;
+  color: #505050;
+  padding: 4px 6px 2px;
+  text-align: center;
+}
+
+/* Overlay for dialogs */
+#overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* Responsive: stack on narrow screens */
+@media (max-width: 700px) {
+  #app { flex-direction: column; }
+  #board {
+    height: auto;
+    width: 100vw;
+    max-height: none;
+  }
+  #panel, #setup-panel {
+    max-width: none;
+    height: 50vh;
+    min-width: auto;
+  }
+}

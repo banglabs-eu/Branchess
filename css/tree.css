@@ -1,0 +1,14 @@
+/* Tree view styles — minimal, SVG handles most rendering */
+
+.tree-container {
+  position: relative;
+}
+
+.tree-svg text {
+  pointer-events: none;
+}
+
+.tree-svg circle,
+.tree-svg polygon {
+  cursor: pointer;
+}

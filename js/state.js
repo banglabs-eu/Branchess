@@ -1,0 +1,174 @@
+// Simple event emitter + centralized game state
+import { STARTING_FEN } from './constants.js';
+import { GameNode, computeTreeLayout } from './game-tree.js';
+
+class EventEmitter {
+  constructor() { this._listeners = {}; }
+  on(evt, fn) { (this._listeners[evt] ||= []).push(fn); }
+  off(evt, fn) { const a = this._listeners[evt]; if (a) this._listeners[evt] = a.filter(f => f !== fn); }
+  emit(evt, ...args) { (this._listeners[evt] || []).forEach(fn => fn(...args)); }
+}
+
+export class GameState extends EventEmitter {
+  constructor(chess) {
+    super();
+    this.chess = chess;
+
+    // Game tree
+    this.treeRoot = new GameNode(STARTING_FEN);
+    this.currentNode = this.treeRoot;
+    this._treeLayoutDirty = true;
+    this._cachedLayout = {};
+
+    // Selection / UI
+    this.selectedSq = null;
+    this.legalDests = new Set();
+    this.lastMove = null; // {from, to}
+    this.status = 'Your turn';
+    this.engineThinking = false;
+    this.gameOver = false;
+
+    // Promotion
+    this.promotingFrom = null;
+    this.promotingTo = null;
+
+    // Animation
+    this.animating = false;
+
+    // Engine queued
+    this._pendingEngineMove = null;
+    this._queuedEngineNav = null;
+
+    // Strength (0-100)
+    this.strength = 70;
+
+    // Setup mode
+    this.setupMode = false;
+    this.setupPiece = null; // {type, color}
+    this.setupTurn = 'w';
+
+    // Dialogs
+    this.showLoadDialog = false;
+    this.showSaveDialog = false;
+    this.saveNameText = '';
+    this.loadPositions = [];
+    this.loadScroll = 0;
+
+    // Tree scroll/zoom
+    this.treeScrollX = 0;
+    this.treeScrollY = 0;
+    this.treeZoom = 1;
+  }
+
+  fen() { return this.chess.fen(); }
+
+  getTreeLayout() {
+    if (this._treeLayoutDirty) {
+      this._cachedLayout = computeTreeLayout(this.treeRoot);
+      this._treeLayoutDirty = false;
+    }
+    return this._cachedLayout;
+  }
+
+  invalidateTreeLayout() {
+    this._treeLayoutDirty = true;
+    this.emit('treeChanged');
+  }
+
+  navigateTo(node) {
+    this.currentNode = node;
+    this.chess.load(node.fen);
+    this.lastMove = node.move; // {from, to} or null
+    this.selectedSq = null;
+    this.legalDests = new Set();
+    this.gameOver = false;
+    this.checkGameOver();
+    if (!this.gameOver) {
+      this.status = this.chess.turn() === 'w' ? 'Your turn' : 'Black to move';
+    }
+    this.emit('boardChanged');
+    this.emit('treeChanged');
+  }
+
+  goBack() {
+    if (this.engineThinking || !this.currentNode.parent) return;
+    let node = this.currentNode;
+    for (let i = 0; i < 2; i++) {
+      if (node.parent) node = node.parent;
+    }
+    this.navigateTo(node);
+  }
+
+  goForward() {
+    if (this.engineThinking || !this.currentNode.children.length) return;
+    let node = this.currentNode.children[0];
+    if (node.children.length) node = node.children[0];
+    this.navigateTo(node);
+  }
+
+  switchBranch(direction) {
+    if (this.engineThinking) return;
+    const parent = this.currentNode.parent;
+    if (!parent || parent.children.length <= 1) return;
+    const idx = parent.children.indexOf(this.currentNode);
+    const newIdx = ((idx + direction) % parent.children.length + parent.children.length) % parent.children.length;
+    this.navigateTo(parent.children[newIdx]);
+  }
+
+  undo() {
+    this.goBack();
+    if (this.currentNode.parent || this.currentNode === this.treeRoot) {
+      this.status = 'Your turn \u2014 try a different move!';
+      this.emit('boardChanged');
+    }
+  }
+
+  checkGameOver() {
+    if (this.chess.isCheckmate()) {
+      const winner = this.chess.turn() === 'w' ? 'Black' : 'White';
+      this.status = `Checkmate! ${winner} wins`;
+      this.gameOver = true;
+    } else if (this.chess.isStalemate()) {
+      this.status = 'Stalemate \u2014 Draw';
+      this.gameOver = true;
+    } else if (this.chess.isInsufficientMaterial()) {
+      this.status = 'Draw \u2014 Insufficient material';
+      this.gameOver = true;
+    } else if (this.chess.isDraw()) {
+      this.status = 'Draw';
+      this.gameOver = true;
+    }
+    return this.gameOver;
+  }
+
+  strengthParams() {
+    const t = this.strength / 100;
+    const skill = Math.round(t * 20);
+    const temperature = Math.max(0, 1.8 * Math.pow(1 - t, 1.5));
+    const thinkTime = Math.round(50 + t * 950); // ms
+    const elo = Math.round(400 + t * t * 3100);
+    return { skill, temperature, thinkTime, elo };
+  }
+
+  resetTree(fen) {
+    this.treeRoot = new GameNode(fen);
+    this.currentNode = this.treeRoot;
+    this.invalidateTreeLayout();
+    this.treeScrollX = 0;
+    this.treeScrollY = 0;
+    this.treeZoom = 1;
+    this.lastMove = null;
+    this.selectedSq = null;
+    this.legalDests = new Set();
+    this.gameOver = false;
+    this.status = this.chess.turn() === 'w' ? 'Your turn' : 'Black to move';
+    this.emit('boardChanged');
+    this.emit('treeChanged');
+  }
+
+  newGame() {
+    if (this.engineThinking) return;
+    this.chess.reset();
+    this.resetTree(STARTING_FEN);
+  }
+}
