@@ -1,7 +1,7 @@
 // IndexedDB save/load + dialogs
-// Replaces filesystem-based persistence from branChess.py
+// Replaces filesystem-based persistence from Branchess.py
 
-const DB_NAME = 'branChess';
+const DB_NAME = 'Branchess';
 const DB_VERSION = 1;
 const STORE_NAME = 'positions';
 

@@ -1,6 +1,6 @@
-# web.branChess
+# web.Branchess
 
-Web port of the branChess desktop app (python.branChess). Static site — pure HTML/CSS/JS, no frameworks, no build tools.
+Web port of the Branchess desktop app (python.Branchess). Static site — pure HTML/CSS/JS, no frameworks, no build tools.
 
 ## Run locally
 
@@ -41,7 +41,7 @@ lib/chess.js        Vendored chess.js v1.4.0 (ESM)
 lib/stockfish/      Vendored Stockfish 18 lite WASM (single-threaded)
 ```
 
-## Key algorithms (ported from python.branChess)
+## Key algorithms (ported from python.Branchess)
 
 - Softmax move selection: `s / (temperature * 100)`, standard softmax
 - Tree layout: recursive, leaves get sequential x, parents centered

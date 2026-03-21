@@ -1,5 +1,5 @@
 // Setup mode — piece palette, castling inference
-// Ported from branChess.py lines 988-1573
+// Ported from Branchess.py lines 988-1573
 import { UNICODE_PIECES, COLOR_BTN_ACTIVE } from './constants.js';
 import { GameNode } from './game-tree.js';
 

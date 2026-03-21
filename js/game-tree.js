@@ -1,4 +1,4 @@
-// GameNode and tree layout — ported from branChess.py lines 100-169
+// GameNode and tree layout — ported from Branchess.py lines 100-169
 
 let _nextId = 0;
 

@@ -1,5 +1,5 @@
 // StochasticEngine — wraps Stockfish WASM worker, softmax move selection, position cache
-// Ported from branChess.py lines 175-251
+// Ported from Branchess.py lines 175-251
 
 export class StochasticEngine {
   constructor() {

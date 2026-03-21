@@ -1,4 +1,4 @@
-// Colors — ported from python.branChess/branChess.py lines 31-67
+// Colors — ported from python.Branchess/Branchess.py lines 31-67
 export const COLOR_LIGHT_SQ = '#f0d9b5';
 export const COLOR_DARK_SQ = '#b58863';
 export const COLOR_SELECTED = 'rgba(130,151,105,0.7)';

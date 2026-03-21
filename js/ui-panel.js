@@ -20,7 +20,7 @@ export class UIPanel {
     // Title
     const title = document.createElement('div');
     title.className = 'panel-title';
-    title.textContent = 'branChess {\u2657}';
+    title.textContent = 'Branchess {\u2657}';
     this.container.appendChild(title);
 
     // Status
