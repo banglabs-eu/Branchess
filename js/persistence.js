@@ -159,6 +159,11 @@ export class DialogManager {
     title.textContent = 'Save Position';
     box.appendChild(title);
 
+    const warning = document.createElement('div');
+    warning.className = 'dialog-label dim';
+    warning.textContent = 'Positions are saved locally on your machine. Clearing your browser\'s site data will delete all saved positions.';
+    box.appendChild(warning);
+
     const label = document.createElement('div');
     label.className = 'dialog-label';
     label.textContent = 'Name:';
@@ -287,6 +292,11 @@ export class DialogManager {
     title.className = 'dialog-title';
     title.textContent = 'Save Game';
     box.appendChild(title);
+
+    const warning = document.createElement('div');
+    warning.className = 'dialog-label dim';
+    warning.textContent = 'Games are saved locally on your machine. Clearing your browser\'s site data will delete all saved games.';
+    box.appendChild(warning);
 
     const label = document.createElement('div');
     label.className = 'dialog-label';
