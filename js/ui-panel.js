@@ -42,6 +42,26 @@ export class UIPanel {
     this.moveList.className = 'move-list';
     this.container.appendChild(this.moveList);
 
+    // Move input: appears on double-click of move list
+    this.moveInput = document.createElement('input');
+    this.moveInput.type = 'text';
+    this.moveInput.className = 'move-input';
+    this.moveInput.placeholder = 'Type move (e.g. e4, Nf3)';
+    this.moveInput.style.display = 'none';
+    this.container.appendChild(this.moveInput);
+
+    this.moveList.addEventListener('dblclick', () => this._enterMoveInput());
+    this.moveInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        this._playTypedMove(this.moveInput.value.trim());
+        this.moveInput.value = '';
+      } else if (e.key === 'Escape') {
+        this._exitMoveInput();
+      }
+    });
+    this.moveInput.addEventListener('blur', () => this._exitMoveInput());
+
     // Buttons
     const btnArea = document.createElement('div');
     btnArea.className = 'btn-area';
@@ -238,6 +258,58 @@ export class UIPanel {
       lines.push(line);
     }
     this.moveList.textContent = lines.slice(-8).join('\n');
+  }
+
+  _enterMoveInput() {
+    this.moveInput.style.display = '';
+    this.moveInput.focus();
+  }
+
+  _exitMoveInput() {
+    this.moveInput.style.display = 'none';
+    this.moveInput.value = '';
+  }
+
+  _playTypedMove(text) {
+    if (!text) return;
+    const state = this.state;
+    const chess = state.chess;
+
+    // Try to parse the move as SAN
+    let result;
+    try {
+      result = chess.move(text);
+    } catch {
+      state.status = `Invalid move: ${text}`;
+      state.emit('boardChanged');
+      return;
+    }
+
+    // Check if move exists in tree already
+    const existing = state.currentNode.findChild({ from: result.from, to: result.to, promotion: result.promotion || '' });
+    if (existing) {
+      // Undo the chess.js move since navigateTo will load the FEN
+      chess.undo();
+      state.navigateTo(existing);
+    } else {
+      const child = state.currentNode.addChild(
+        { from: result.from, to: result.to, promotion: result.promotion },
+        chess.fen(),
+        result.san
+      );
+      state.currentNode = child;
+      state.invalidateTreeLayout();
+    }
+
+    state.lastMove = { from: result.from, to: result.to };
+    state.selectedSq = null;
+    state.legalDests = new Set();
+    state.checkGameOver();
+    if (!state.gameOver) {
+      state.status = chess.turn() === 'w' ? 'White to move' : 'Black to move';
+    }
+    state.emit('boardChanged');
+    state.emit('treeChanged');
   }
 
   async _pastePGN() {

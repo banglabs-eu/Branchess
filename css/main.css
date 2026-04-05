@@ -245,6 +245,23 @@ html, body {
   overflow-y: auto;
 }
 
+.move-input {
+  width: calc(100% - 12px);
+  margin: 0 6px 4px;
+  padding: 4px 6px;
+  font-size: 15px;
+  font-family: 'JetBrains Mono', monospace;
+  background: #1a1a1a;
+  color: var(--text);
+  border: 1px solid #555;
+  border-radius: 4px;
+  outline: none;
+}
+
+.move-input:focus {
+  border-color: var(--btn-active);
+}
+
 /* Buttons */
 .btn-area {
   display: flex;
