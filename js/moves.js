@@ -304,14 +304,14 @@ export class MoveHandler {
         const move = target.move;
         this.animation.animate(move, () => {
           state.navigateTo(target);
-          if (!state.gameOver) state.status = 'Your turn';
+          if (!state.gameOver) state.status = state.chess.turn() === 'w' ? 'White to move' : 'Black to move';
           state.emit('boardChanged');
         });
       } else {
         this._requestEngineMove();
       }
     } else {
-      state.status = 'Your turn';
+      state.status = state.chess.turn() === 'w' ? 'White to move' : 'Black to move';
       state.emit('boardChanged');
     }
   }

@@ -30,7 +30,7 @@ export class GameState extends EventEmitter {
     this.selectedSq = null;
     this.legalDests = new Set();
     this.lastMove = null; // {from, to}
-    this.status = 'Your turn';
+    this.status = 'White to move';
     this.engineThinking = false;
     this.gameOver = false;
 
@@ -91,7 +91,7 @@ export class GameState extends EventEmitter {
     this.gameOver = false;
     this.checkGameOver();
     if (!this.gameOver) {
-      this.status = this.chess.turn() === 'w' ? 'Your turn' : 'Black to move';
+      this.status = this.chess.turn() === 'w' ? 'White to move' : 'Black to move';
     }
     this.emit('boardChanged');
     this.emit('treeChanged');
@@ -119,7 +119,7 @@ export class GameState extends EventEmitter {
   undo() {
     this.goBack();
     if (this.currentNode.parent || this.currentNode === this.treeRoot) {
-      this.status = 'Your turn \u2014 try a different move!';
+      this.status = 'White to move \u2014 try a different move!';
       this.emit('boardChanged');
     }
   }
@@ -163,7 +163,7 @@ export class GameState extends EventEmitter {
     this.legalDests = new Set();
     this.bestMoveHint = null;
     this.gameOver = false;
-    this.status = this.chess.turn() === 'w' ? 'Your turn' : 'Black to move';
+    this.status = this.chess.turn() === 'w' ? 'White to move' : 'Black to move';
     this.emit('boardChanged');
     this.emit('treeChanged');
   }
