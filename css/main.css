@@ -28,6 +28,7 @@ html, body {
   width: 100vw;
   margin: 0 auto;
   background: var(--bg);
+  overflow: hidden;
 }
 
 /* Board wrapper */
@@ -85,8 +86,7 @@ html, body {
   grid-template-rows: repeat(8, 1fr);
   aspect-ratio: 1;
   height: 88vh;
-  max-height: 88vw;
-  max-width: calc(200vw / 3);
+  max-height: min(88vw, calc(200vw / 3));
 }
 
 .square {
