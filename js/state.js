@@ -142,9 +142,11 @@ export class GameState extends EventEmitter {
   strengthParams() {
     const t = this.strength / 100;
     const skill = Math.round(t * 20);
-    const temperature = Math.max(0, 3.0 * Math.pow(1 - t, 1.2));
-    const thinkTime = Math.round(20 + t * t * 1500); // ms — very fast at low levels
-    const elo = Math.round(200 + t * t * 3300);
+    // Temperature: only affects low settings, near-zero above 50%
+    const temperature = t < 0.5 ? 2.0 * Math.pow(1 - t * 2, 1.5) : 0;
+    const thinkTime = Math.round(50 + t * t * 2000); // ms
+    // Honest ELO: Stockfish WASM skill 0=~800, skill 20=~3000+
+    const elo = Math.round(800 + t * 2200);
     return { skill, temperature, thinkTime, elo };
   }
 
