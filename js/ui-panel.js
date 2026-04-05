@@ -61,6 +61,7 @@ export class UIPanel {
       }
     });
     this.moveInput.addEventListener('blur', () => this._exitMoveInput());
+    this.moveInput.addEventListener('input', () => this._validateMoveInput());
 
     // Buttons
     const btnArea = document.createElement('div');
@@ -268,6 +269,23 @@ export class UIPanel {
   _exitMoveInput() {
     this.moveInput.style.display = 'none';
     this.moveInput.value = '';
+    this.moveInput.classList.remove('move-input-invalid');
+  }
+
+  _validateMoveInput() {
+    const text = this.moveInput.value.trim();
+    if (!text) {
+      this.moveInput.classList.remove('move-input-invalid');
+      return;
+    }
+    const chess = this.state.chess;
+    try {
+      chess.move(text);
+      chess.undo();
+      this.moveInput.classList.remove('move-input-invalid');
+    } catch {
+      this.moveInput.classList.add('move-input-invalid');
+    }
   }
 
   _playTypedMove(text) {

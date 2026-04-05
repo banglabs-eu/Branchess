@@ -262,6 +262,11 @@ html, body {
   border-color: var(--btn-active);
 }
 
+.move-input-invalid {
+  border-color: #c44 !important;
+  color: #e66;
+}
+
 /* Buttons */
 .btn-area {
   display: flex;
