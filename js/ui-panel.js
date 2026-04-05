@@ -335,11 +335,11 @@ export class UIPanel {
     const nodeLabel = (n) => {
       let label = n.san || 'Start';
       if (n.annotation) label += n.annotation;
-      if (n.note) label += ` "${n.note.substring(0, 20)}"`;
       return label.replace(/"/g, '#quot;');
     };
 
     const nodeId = (n) => `n${n.id}`;
+    const noteId = (n) => `note${n.id}`;
 
     const walk = (node) => {
       if (visited.has(node.id)) return;
@@ -351,6 +351,11 @@ export class UIPanel {
       if (node.annotation) m.ann = node.annotation;
       if (node.note) m.note = node.note;
       meta.push(`%% ${nodeId(node)} ${JSON.stringify(m)}`);
+      // Note as a separate box linked to the move
+      if (node.note) {
+        const noteText = node.note.replace(/"/g, '#quot;');
+        lines.push(`    ${noteId(node)}["${noteText}"]:::note -.- ${nodeId(node)}`);
+      }
       for (const child of node.children) {
         lines.push(`    ${nodeId(node)}["${nodeLabel(node)}"] --> ${nodeId(child)}["${nodeLabel(child)}"]`);
         walk(child);
@@ -362,6 +367,7 @@ export class UIPanel {
 
     walk(state.treeRoot);
 
+    lines.push('    classDef note fill:#fffacd,stroke:#ccc,color:#333,font-size:11px');
     const mmd = lines.join('\n') + '\n' + meta.join('\n') + '\n';
     const blob = new Blob([mmd], { type: 'text/plain' });
     const a = document.createElement('a');
