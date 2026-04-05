@@ -54,7 +54,7 @@ html, body {
 
 #board-row {
   display: flex;
-  align-items: stretch;
+  align-items: center;
 }
 
 .rank-labels {
@@ -430,8 +430,9 @@ html, body {
 }
 
 .board-floating #board {
-  height: 30vh;
-  max-height: 30vw;
+  --board-size: min(30vh, 30vw);
+  width: var(--board-size);
+  height: var(--board-size);
 }
 
 .board-floating .file-labels {
@@ -468,9 +469,9 @@ html, body {
 @media (max-width: 700px) {
   #app { flex-direction: column; }
   #board {
-    height: auto;
-    width: 100vw;
-    max-height: none;
+    --board-size: min(100vw, 50vh);
+    width: var(--board-size);
+    height: var(--board-size);
   }
   #panel, #setup-panel {
     max-width: none;
