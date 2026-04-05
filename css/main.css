@@ -253,6 +253,27 @@ html, body {
   padding: 4px 0;
 }
 
+.btn-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 0;
+  border-top: 1px solid #3a3a3a;
+}
+
+.btn-section:first-child {
+  border-top: none;
+}
+
+.btn-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-dim);
+  padding: 2px 2px 0;
+}
+
 .btn-row {
   display: flex;
   gap: 6px;

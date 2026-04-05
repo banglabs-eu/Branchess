@@ -46,36 +46,54 @@ export class UIPanel {
     const btnArea = document.createElement('div');
     btnArea.className = 'btn-area';
 
-    // Row 1: Back / Forward
-    const row1 = this._btnRow();
-    this._addBtn(row1, '\u2190 Back', () => this.state.goBack(), 'half');
-    this._addBtn(row1, 'Fwd \u2192', () => this.state.goForward(), 'half');
-    btnArea.appendChild(row1);
+    // --- Navigation ---
+    const navSection = this._section('Navigation');
+    const navRow = this._btnRow();
+    this._addBtn(navRow, '\u2190 Back', () => this.state.goBack(), 'half');
+    this._addBtn(navRow, 'Fwd \u2192', () => this.state.goForward(), 'half');
+    navSection.appendChild(navRow);
+    this._addBtn(navSection, 'Flip Board', () => this.state.flipBoard());
+    btnArea.appendChild(navSection);
 
-    // Row 2: Engine Move / Paste PGN
-    const row2 = this._btnRow();
-    this._addBtn(row2, 'Engine Move', () => this.moveHandler.requestEngineCalculation(), 'half');
-    this._addBtn(row2, 'Paste PGN', () => this._pastePGN(), 'half');
-    btnArea.appendChild(row2);
-
-    // Full-width buttons
-    this._addBtn(btnArea, 'Flip Board', () => this.state.flipBoard());
-    this.pauseEngineBtn = this._addBtn(btnArea, 'Pause Engine', () => {
+    // --- Engine ---
+    const engineSection = this._section('Engine');
+    const engineRow = this._btnRow();
+    this._addBtn(engineRow, 'Engine Move', () => this.moveHandler.requestEngineCalculation(), 'half');
+    this.pauseEngineBtn = this._addBtn(engineRow, 'Pause Engine', () => {
       this.state.enginePaused = !this.state.enginePaused;
       this.pauseEngineBtn.textContent = this.state.enginePaused ? 'Resume Engine' : 'Pause Engine';
-    });
-    this.versusBtn = this._addBtn(btnArea, '2P Mode', () => {
+    }, 'half');
+    engineSection.appendChild(engineRow);
+    this.versusBtn = this._addBtn(engineSection, '2P Mode', () => {
       this.state.toggleVersusMode();
       this.versusBtn.textContent = this.state.versusMode ? '1P Mode' : '2P Mode';
     });
-    this._addBtn(btnArea, 'Share Position', () => this._sharePosition());
-    this._addBtn(btnArea, 'Export Mermaid', () => this._exportMermaid());
-    this._addBtn(btnArea, 'Save Position', () => this._openSaveDialog());
-    this._addBtn(btnArea, 'Load Position', () => this._openLoadDialog());
-    this._addBtn(btnArea, 'Save Game', () => this.state.emit('openSaveGameDialog'));
-    this._addBtn(btnArea, 'Load Game', () => this.state.emit('openLoadGameDialog'));
-    this._addBtn(btnArea, 'Setup Board', () => this._enterSetupMode());
-    this._addBtn(btnArea, 'New Game', () => this.state.newGame());
+    btnArea.appendChild(engineSection);
+
+    // --- Save & Load ---
+    const saveSection = this._section('Save & Load');
+    const savePosRow = this._btnRow();
+    this._addBtn(savePosRow, 'Save Position', () => this._openSaveDialog(), 'half');
+    this._addBtn(savePosRow, 'Load Position', () => this._openLoadDialog(), 'half');
+    saveSection.appendChild(savePosRow);
+    const saveGameRow = this._btnRow();
+    this._addBtn(saveGameRow, 'Save Game', () => this.state.emit('openSaveGameDialog'), 'half');
+    this._addBtn(saveGameRow, 'Load Game', () => this.state.emit('openLoadGameDialog'), 'half');
+    saveSection.appendChild(saveGameRow);
+    btnArea.appendChild(saveSection);
+
+    // --- Import & Export ---
+    const ioSection = this._section('Import & Export');
+    this._addBtn(ioSection, 'Paste PGN', () => this._pastePGN());
+    this._addBtn(ioSection, 'Share Position', () => this._sharePosition());
+    this._addBtn(ioSection, 'Export Mermaid', () => this._exportMermaid());
+    btnArea.appendChild(ioSection);
+
+    // --- Board ---
+    const boardSection = this._section('Board');
+    this._addBtn(boardSection, 'Setup Board', () => this._enterSetupMode());
+    this._addBtn(boardSection, 'New Game', () => this.state.newGame());
+    btnArea.appendChild(boardSection);
 
     this.container.appendChild(btnArea);
 
@@ -93,6 +111,16 @@ export class UIPanel {
 
     this._updateStatus();
     this._updateMoveList();
+  }
+
+  _section(title) {
+    const section = document.createElement('div');
+    section.className = 'btn-section';
+    const heading = document.createElement('div');
+    heading.className = 'btn-section-title';
+    heading.textContent = title;
+    section.appendChild(heading);
+    return section;
   }
 
   _btnRow() {
