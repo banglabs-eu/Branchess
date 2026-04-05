@@ -335,6 +335,10 @@ export class TreeView {
       this.state.treeScrollX += clickSvgX - newW / 2;
       this.state.treeScrollY += clickSvgY - newH / 2;
 
+      // Move buttons under the floating board
+      const btnArea = panel.querySelector('.btn-area');
+      if (btnArea) boardWrap.appendChild(btnArea);
+
       // Position board at bottom-right
       // Use requestAnimationFrame so the board has its floating size
       requestAnimationFrame(() => {
@@ -347,7 +351,7 @@ export class TreeView {
 
       // Make board draggable
       this._boardMouseDown = (ev) => {
-        if (ev.target.closest('.square')) return;
+        if (ev.target.closest('.square') || ev.target.closest('.btn-area')) return;
         ev.preventDefault();
         this._boardDragging = true;
         this._boardDragStart = { x: ev.clientX - this._boardPos.x, y: ev.clientY - this._boardPos.y };
@@ -369,6 +373,14 @@ export class TreeView {
       const svgRect = this.svg.getBoundingClientRect();
       const clickSvgX = e.clientX - svgRect.left;
       const clickSvgY = e.clientY - svgRect.top;
+
+      // Move buttons back to panel (before the slider)
+      const btnArea = boardWrap.querySelector('.btn-area');
+      if (btnArea) {
+        const slider = panel.querySelector('.slider-area');
+        if (slider) panel.insertBefore(btnArea, slider);
+        else panel.appendChild(btnArea);
+      }
 
       // Restore normal layout
       this.container.classList.remove('tree-fullscreen');

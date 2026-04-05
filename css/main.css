@@ -419,6 +419,14 @@ html, body {
   font-size: calc(30vh / 8 * 0.72) !important;
 }
 
+.board-floating .btn-area {
+  max-height: 30vh;
+  overflow-y: auto;
+  padding: 4px;
+  background: var(--panel-bg);
+  border-radius: 0 0 6px 6px;
+}
+
 /* When tree is fullscreen, hide panel but tree escapes via position:fixed */
 .panel-hidden {
   visibility: hidden !important;
