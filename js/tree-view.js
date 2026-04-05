@@ -1,9 +1,6 @@
 // SVG-based game tree visualization
 // Ported from Branchess.py lines 860-986
-import { COLOR_TREE_EDGE, COLOR_TREE_PATH_EDGE, COLOR_TREE_NODE, COLOR_TREE_NODE_BORDER,
-         COLOR_TREE_PATH_NODE, COLOR_TREE_PATH_BORDER, COLOR_TREE_CURRENT, COLOR_TREE_BRANCH,
-         COLOR_TREE_LABEL, COLOR_TREE_LABEL_DIM, TREE_SPACING_X, TREE_SPACING_Y,
-         TREE_NODE_R } from './constants.js';
+import { TREE_SPACING_X, TREE_SPACING_Y, TREE_NODE_R, treeColors } from './constants.js';
 import { OPENINGS } from './openings.js';
 import { isTablebasePosition, queryTablebase, categoryLabel, categoryColor } from './tablebase.js';
 
@@ -417,6 +414,7 @@ export class TreeView {
     const layout = this.state.getTreeLayout();
     if (!layout.size) return;
 
+    const tc = treeColors();
     const state = this.state;
     const zoom = state.treeZoom;
     const r = Math.max(2, Math.round(TREE_NODE_R * zoom));
@@ -471,7 +469,7 @@ export class TreeView {
         if (!cPos) continue;
         if (pathIds.has(n.id) && pathIds.has(child.id)) continue;
         const [cpx, cpy] = toPx(cPos.x, cPos.y);
-        this._drawEdge(ppx, ppy + r, cpx, cpy - r, COLOR_TREE_EDGE, 1);
+        this._drawEdge(ppx, ppy + r, cpx, cpy - r, tc.EDGE, 1);
       }
     }
 
@@ -484,8 +482,8 @@ export class TreeView {
       const [ppx, ppy] = toPx(pPos.x, pPos.y);
       const [cpx, cpy] = toPx(cPos.x, cPos.y);
       // Glow edge
-      this._drawEdge(ppx, ppy + r, cpx, cpy - r, COLOR_TREE_PATH_EDGE, 4, 0.3);
-      this._drawEdge(ppx, ppy + r, cpx, cpy - r, COLOR_TREE_PATH_EDGE, 2);
+      this._drawEdge(ppx, ppy + r, cpx, cpy - r, tc.PATH_EDGE, 4, 0.3);
+      this._drawEdge(ppx, ppy + r, cpx, cpy - r, tc.PATH_EDGE, 2);
     }
 
     // Annotation color map
@@ -514,7 +512,7 @@ export class TreeView {
 
       if (isCurrent) {
         // Glow halo
-        const haloColor = annoColor || COLOR_TREE_CURRENT;
+        const haloColor = annoColor || tc.CURRENT;
         const halo = document.createElementNS(SVG_NS, 'circle');
         halo.setAttribute('cx', npx);
         halo.setAttribute('cy', npy);
@@ -527,7 +525,7 @@ export class TreeView {
         circle.setAttribute('cx', npx);
         circle.setAttribute('cy', npy);
         circle.setAttribute('r', r + 2);
-        circle.setAttribute('fill', annoColor || COLOR_TREE_CURRENT);
+        circle.setAttribute('fill', annoColor || tc.CURRENT);
         circle.setAttribute('stroke', '#fff');
         circle.setAttribute('stroke-width', '2');
         circle.setAttribute('filter', 'url(#glow)');
@@ -548,8 +546,8 @@ export class TreeView {
         circle.setAttribute('cx', npx);
         circle.setAttribute('cy', npy);
         circle.setAttribute('r', r);
-        circle.setAttribute('fill', COLOR_TREE_PATH_NODE);
-        circle.setAttribute('stroke', COLOR_TREE_PATH_BORDER);
+        circle.setAttribute('fill', tc.PATH_NODE);
+        circle.setAttribute('stroke', tc.PATH_BORDER);
         circle.setAttribute('stroke-width', '1');
         circle.dataset.nodeId = n.id;
         this.nodesGroup.append(circle);
@@ -560,7 +558,7 @@ export class TreeView {
         ].join(' ');
         const poly = document.createElementNS(SVG_NS, 'polygon');
         poly.setAttribute('points', pts);
-        poly.setAttribute('fill', COLOR_TREE_BRANCH);
+        poly.setAttribute('fill', tc.BRANCH);
         poly.setAttribute('stroke', '#c8aa64');
         poly.setAttribute('stroke-width', '1');
         poly.dataset.nodeId = n.id;
@@ -570,8 +568,8 @@ export class TreeView {
         circle.setAttribute('cx', npx);
         circle.setAttribute('cy', npy);
         circle.setAttribute('r', r - 1);
-        circle.setAttribute('fill', COLOR_TREE_NODE);
-        circle.setAttribute('stroke', COLOR_TREE_NODE_BORDER);
+        circle.setAttribute('fill', tc.NODE);
+        circle.setAttribute('stroke', tc.NODE_BORDER);
         circle.setAttribute('stroke-width', '1');
         circle.dataset.nodeId = n.id;
         this.nodesGroup.append(circle);
@@ -594,7 +592,7 @@ export class TreeView {
           const text = document.createElementNS(SVG_NS, 'text');
           text.setAttribute('x', npx + r + 3);
           text.setAttribute('y', npy + 3);
-          text.setAttribute('fill', annoColor || (onPath ? COLOR_TREE_LABEL : COLOR_TREE_LABEL_DIM));
+          text.setAttribute('fill', annoColor || (onPath ? tc.LABEL : tc.LABEL_DIM));
           text.setAttribute('font-size', Math.max(11, 16 * zoom) + 'px');
           text.setAttribute('font-family', 'system-ui, sans-serif');
           text.textContent = n.san + (n.annotation || '');

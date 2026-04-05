@@ -22,7 +22,7 @@ export const COLOR_PALETTE_SEL = '#64a064';
 export const COLOR_SLIDER_TRACK = '#3c3a37';
 export const COLOR_SLIDER_FILL = '#64b450';
 
-// Tree colors
+// Tree colors — classic theme
 export const COLOR_TREE_EDGE = '#37373c';
 export const COLOR_TREE_PATH_EDGE = '#8cc350';
 export const COLOR_TREE_NODE = '#5a5a5f';
@@ -33,6 +33,38 @@ export const COLOR_TREE_CURRENT = '#50e63c';
 export const COLOR_TREE_BRANCH = '#b48c50';
 export const COLOR_TREE_LABEL = '#bebea0';
 export const COLOR_TREE_LABEL_DIM = '#6e6e64';
+
+// Tree colors — Bang Labs theme
+const BANGLABS_TREE = {
+  EDGE: '#1e1e3a',
+  PATH_EDGE: '#6366f1',
+  NODE: '#2a2a44',
+  NODE_BORDER: '#4a4a6a',
+  PATH_NODE: '#6366f1',
+  PATH_BORDER: '#818cf8',
+  CURRENT: '#06b6d4',
+  BRANCH: '#818cf8',
+  LABEL: '#c7d2fe',
+  LABEL_DIM: '#4a4a6a',
+};
+
+export function treeColors() {
+  if (document.documentElement.classList.contains('theme-banglabs')) {
+    return BANGLABS_TREE;
+  }
+  return {
+    EDGE: COLOR_TREE_EDGE,
+    PATH_EDGE: COLOR_TREE_PATH_EDGE,
+    NODE: COLOR_TREE_NODE,
+    NODE_BORDER: COLOR_TREE_NODE_BORDER,
+    PATH_NODE: COLOR_TREE_PATH_NODE,
+    PATH_BORDER: COLOR_TREE_PATH_BORDER,
+    CURRENT: COLOR_TREE_CURRENT,
+    BRANCH: COLOR_TREE_BRANCH,
+    LABEL: COLOR_TREE_LABEL,
+    LABEL_DIM: COLOR_TREE_LABEL_DIM,
+  };
+}
 
 // Layout
 export const ANIM_DURATION = 180; // ms

@@ -602,6 +602,8 @@ export class UIPanel {
     const isBangLabs = document.documentElement.classList.toggle('theme-banglabs');
     this.themeBtn.textContent = isBangLabs ? 'Theme: Bang Labs' : 'Theme: Classic';
     localStorage.setItem('branchess-theme', isBangLabs ? 'banglabs' : 'classic');
+    this.state.emit('treeChanged');
+    this.state.emit('boardChanged');
   }
 
   _enterSetupMode() {

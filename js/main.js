@@ -9,6 +9,7 @@ import { TreeView } from './tree-view.js';
 import { UIPanel } from './ui-panel.js';
 import { SetupPanel } from './setup.js';
 import { DialogManager } from './persistence.js';
+import { bang, fireworksShow } from './bang.js';
 
 // Initialize — load FEN from URL if present
 const chess = new Chess();
@@ -116,6 +117,23 @@ if (localStorage.getItem('branchess-theme') === 'banglabs') {
   document.documentElement.classList.add('theme-banglabs');
   uiPanel.themeBtn.textContent = 'Theme: Bang Labs';
 }
+
+// Fireworks — click off the board
+document.addEventListener('click', (e) => {
+  if (e.target.closest('#board, #panel, #setup-panel, #overlay, .panel-btn, .btn-area, .dialog')) return;
+  bang(e.clientX, e.clientY);
+});
+
+// Fireworks show on winning
+state.on('boardChanged', () => {
+  if (state.gameOver && state.status && state.status.includes('Checkmate')) {
+    // Player won if the side that just got mated is not the player
+    const loserTurn = state.chess.turn(); // side in checkmate
+    if (loserTurn !== state.playerColor) {
+      fireworksShow();
+    }
+  }
+});
 
 // Initial render
 boardView.render();
