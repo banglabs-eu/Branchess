@@ -36,9 +36,7 @@ html, body {
   display: flex;
   flex-direction: column;
   align-self: center;
-  flex-shrink: 1;
-  min-width: 0;
-  max-width: calc(200vw / 3);
+  flex-shrink: 0;
 }
 
 .file-labels {
@@ -85,7 +83,7 @@ html, body {
   grid-template-columns: repeat(8, 1fr);
   grid-template-rows: repeat(8, 1fr);
   aspect-ratio: 1;
-  height: min(88vh, calc(200vw / 3));
+  height: min(88vh, calc(200vw / 3 - 24px));
 }
 
 .square {
