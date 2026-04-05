@@ -86,7 +86,10 @@ export class UIPanel {
     const ioSection = this._section('Import & Export');
     this._addBtn(ioSection, 'Paste PGN', () => this._pastePGN());
     this._addBtn(ioSection, 'Share Position', () => this._sharePosition());
-    this._addBtn(ioSection, 'Export Mermaid', () => this._exportMermaid());
+    const mermaidRow = this._btnRow();
+    this._addBtn(mermaidRow, 'Export Mermaid', () => this._exportMermaid(), 'half');
+    this._addBtn(mermaidRow, 'Load Mermaid', () => this._loadMermaidFile(), 'half');
+    ioSection.appendChild(mermaidRow);
     btnArea.appendChild(ioSection);
 
     // --- Board ---
@@ -326,6 +329,7 @@ export class UIPanel {
   _exportMermaid() {
     const state = this.state;
     const lines = ['graph TD'];
+    const meta = ['', '%% branchess-meta'];
     const visited = new Set();
 
     const nodeLabel = (n) => {
@@ -340,11 +344,17 @@ export class UIPanel {
     const walk = (node) => {
       if (visited.has(node.id)) return;
       visited.add(node.id);
+      // Metadata: fen, move, full annotation/note
+      const m = { fen: node.fen };
+      if (node.move) m.move = node.move;
+      if (node.san) m.san = node.san;
+      if (node.annotation) m.ann = node.annotation;
+      if (node.note) m.note = node.note;
+      meta.push(`%% ${nodeId(node)} ${JSON.stringify(m)}`);
       for (const child of node.children) {
         lines.push(`    ${nodeId(node)}["${nodeLabel(node)}"] --> ${nodeId(child)}["${nodeLabel(child)}"]`);
         walk(child);
       }
-      // Leaf nodes with no children still need to be declared
       if (!node.children.length && !node.parent) {
         lines.push(`    ${nodeId(node)}["${nodeLabel(node)}"]`);
       }
@@ -352,7 +362,7 @@ export class UIPanel {
 
     walk(state.treeRoot);
 
-    const mmd = lines.join('\n');
+    const mmd = lines.join('\n') + '\n' + meta.join('\n') + '\n';
     const blob = new Blob([mmd], { type: 'text/plain' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -362,6 +372,93 @@ export class UIPanel {
 
     state.status = 'Exported Mermaid file';
     state.emit('boardChanged');
+  }
+
+  _loadMermaidFile() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.mmd,.mm';
+    input.addEventListener('change', () => {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => this._importMermaid(reader.result);
+      reader.readAsText(file);
+    });
+    input.click();
+  }
+
+  _importMermaid(text) {
+    const state = this.state;
+
+    // Parse metadata lines: %% nX {"fen":...}
+    const metaLines = text.split('\n').filter(l => l.startsWith('%% n'));
+    if (!metaLines.length) {
+      state.status = 'No Branchess metadata found in file';
+      state.emit('boardChanged');
+      return;
+    }
+
+    // Parse nodes
+    const nodes = new Map();
+    for (const line of metaLines) {
+      const match = line.match(/^%% (n\d+) (.+)$/);
+      if (!match) continue;
+      const id = match[1];
+      const data = JSON.parse(match[2]);
+      nodes.set(id, data);
+    }
+
+    // Parse edges: nX["..."] --> nY["..."]
+    const edges = [];
+    for (const line of text.split('\n')) {
+      const m = line.match(/(n\d+)\[.*?\]\s*-->\s*(n\d+)\[/);
+      if (m) edges.push([m[1], m[2]]);
+    }
+
+    // Find root (node with no incoming edges)
+    const hasParent = new Set(edges.map(e => e[1]));
+    const rootId = [...nodes.keys()].find(id => !hasParent.has(id));
+    if (!rootId || !nodes.has(rootId)) {
+      state.status = 'Could not find root node in Mermaid file';
+      state.emit('boardChanged');
+      return;
+    }
+
+    // Build tree
+    const buildNode = (id, parent) => {
+      const data = nodes.get(id);
+      const node = new GameNode(data.fen, data.move || null, data.san || '', parent);
+      node.annotation = data.ann || '';
+      node.note = data.note || '';
+      // Find children in edge order
+      const childIds = edges.filter(e => e[0] === id).map(e => e[1]);
+      for (const childId of childIds) {
+        if (nodes.has(childId)) {
+          node.children.push(buildNode(childId, node));
+        }
+      }
+      return node;
+    };
+
+    const root = buildNode(rootId, null);
+    let last = root;
+    while (last.children.length) last = last.children[0];
+
+    state.treeRoot = root;
+    state.currentNode = last;
+    state.chess.load(last.fen);
+    state.invalidateTreeLayout();
+    state.treeScrollX = 0;
+    state.treeScrollY = 0;
+    state.treeZoom = 1;
+    state.lastMove = last.move ? { from: last.move.from, to: last.move.to } : null;
+    state.selectedSq = null;
+    state.legalDests = new Set();
+    state.gameOver = false;
+    state.status = 'Mermaid game loaded';
+    state.emit('boardChanged');
+    state.emit('treeChanged');
   }
 
   _enterSetupMode() {
