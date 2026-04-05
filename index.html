@@ -10,6 +10,14 @@
   <link rel="stylesheet" href="css/dialogs.css">
 </head>
 <body>
+  <div id="small-screen-warning">
+    <div class="warning-box">
+      <span class="warning-icon">&#9815;</span>
+      <h2>Branchess</h2>
+      <p>Branchess is designed for larger screens. For the best experience, open it on a desktop or laptop.</p>
+      <button id="warning-dismiss">Continue anyway</button>
+    </div>
+  </div>
   <div id="app">
     <div id="board-wrap">
       <div id="file-labels-top" class="file-labels"></div>
@@ -23,6 +31,11 @@
     <div id="setup-panel"></div>
   </div>
   <div id="overlay"></div>
+  <script>
+    document.getElementById('warning-dismiss').addEventListener('click', function() {
+      document.getElementById('small-screen-warning').classList.add('dismissed');
+    });
+  </script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

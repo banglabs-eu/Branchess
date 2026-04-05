@@ -407,8 +407,72 @@ html, body {
   pointer-events: auto !important;
 }
 
-/* Responsive: stack on narrow screens */
+/* Small screen warning */
+#small-screen-warning {
+  display: none;
+}
+
 @media (max-width: 700px) {
+  #small-screen-warning {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: #1a1a1a;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  #small-screen-warning.dismissed {
+    display: none;
+  }
+
+  .warning-box {
+    text-align: center;
+    max-width: 320px;
+  }
+
+  .warning-icon {
+    font-size: 64px;
+    display: block;
+    margin-bottom: 16px;
+    color: #f0d9b5;
+  }
+
+  .warning-box h2 {
+    font-family: 'Inter', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #dcdcdc;
+    margin-bottom: 12px;
+  }
+
+  .warning-box p {
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    color: #969696;
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+
+  #warning-dismiss {
+    background: #505050;
+    color: #e6e6e6;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 24px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  #warning-dismiss:hover {
+    background: #646464;
+  }
+
+  /* Responsive layout if user dismisses */
   #app { flex-direction: column; }
   #board {
     height: auto;
