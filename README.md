@@ -2,7 +2,7 @@
 
 Web version of Branchess — a chess analysis tool built around a branching game tree. Play against Stockfish 18, explore opening theory, annotate moves, and study endgames.
 
-**[Play online](https://play.branchess.bang-labs.eu)** | **[Website](https://branchess.bang-labs.eu)**
+**[Play online](https://play-branchess.bang-labs.eu)** | **[Website](https://branchess.bang-labs.eu)**
 
 ## Run locally
 
