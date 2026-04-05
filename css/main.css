@@ -478,7 +478,6 @@ html, body {
 }
 
 .board-floating .btn-area {
-  max-height: 30vh;
   overflow-y: auto;
   padding: 4px;
   background: var(--panel-bg);

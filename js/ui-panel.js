@@ -264,7 +264,8 @@ export class UIPanel {
       lines.push(line);
     }
     if (lines.length) {
-      this.moveList.textContent = lines.slice(-8).join('\n');
+      this.moveList.textContent = lines.join('\n');
+      this.moveList.scrollTop = this.moveList.scrollHeight;
       this.moveList.classList.remove('move-list-empty');
     } else {
       this.moveList.textContent = 'Double-click to type moves';
