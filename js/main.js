@@ -118,17 +118,23 @@ if (localStorage.getItem('branchess-theme') === 'banglabs') {
   uiPanel.themeBtn.textContent = 'Theme: Bang Labs';
 }
 
-// Fireworks — click off the board
+// Fireworks — only in Bang Labs theme
+function isBangLabsTheme() {
+  return document.documentElement.classList.contains('theme-banglabs');
+}
+
+// Click off the board
 document.addEventListener('click', (e) => {
+  if (!isBangLabsTheme()) return;
   if (e.target.closest('#board, #panel, #setup-panel, #overlay, .panel-btn, .btn-area, .dialog')) return;
   bang(e.clientX, e.clientY);
 });
 
 // Fireworks show on winning
 state.on('boardChanged', () => {
+  if (!isBangLabsTheme()) return;
   if (state.gameOver && state.status && state.status.includes('Checkmate')) {
-    // Player won if the side that just got mated is not the player
-    const loserTurn = state.chess.turn(); // side in checkmate
+    const loserTurn = state.chess.turn();
     if (loserTurn !== state.playerColor) {
       fireworksShow();
     }
