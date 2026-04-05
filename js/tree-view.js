@@ -590,10 +590,11 @@ export class TreeView {
         const showLabel = onPath || (n.parent && n.parent.children.length > 1) || n.annotation;
         if (showLabel) {
           const text = document.createElementNS(SVG_NS, 'text');
-          text.setAttribute('x', npx + r + 3);
-          text.setAttribute('y', npy + 3);
+          text.setAttribute('x', npx);
+          text.setAttribute('y', npy + r + Math.max(10, 14 * zoom));
+          text.setAttribute('text-anchor', 'middle');
           text.setAttribute('fill', annoColor || (onPath ? tc.LABEL : tc.LABEL_DIM));
-          text.setAttribute('font-size', Math.max(11, 16 * zoom) + 'px');
+          text.setAttribute('font-size', Math.max(9, 12 * zoom) + 'px');
           text.setAttribute('font-family', 'system-ui, sans-serif');
           text.textContent = n.san + (n.annotation || '');
           this.labelsGroup.append(text);
