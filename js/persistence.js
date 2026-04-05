@@ -363,14 +363,17 @@ export class DialogManager {
             <span class="dim">${(game.savedAt || '').substring(0, 16).replace('T', ' ')}</span>`;
           info.addEventListener('click', () => {
             const root = deserializeTree(game.tree);
+            // Walk to the end of the main line
+            let last = root;
+            while (last.children.length) last = last.children[0];
             this.state.treeRoot = root;
-            this.state.currentNode = root;
-            this.state.chess.load(root.fen);
+            this.state.currentNode = last;
+            this.state.chess.load(last.fen);
             this.state.invalidateTreeLayout();
             this.state.treeScrollX = 0;
             this.state.treeScrollY = 0;
             this.state.treeZoom = 1;
-            this.state.lastMove = null;
+            this.state.lastMove = last.move ? { from: last.move.from, to: last.move.to } : null;
             this.state.selectedSq = null;
             this.state.legalDests = new Set();
             this.state.gameOver = false;
