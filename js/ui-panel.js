@@ -258,7 +258,13 @@ export class UIPanel {
       if (i + 1 < moves.length) line += `  ${moves[i + 1]}`;
       lines.push(line);
     }
-    this.moveList.textContent = lines.slice(-8).join('\n');
+    if (lines.length) {
+      this.moveList.textContent = lines.slice(-8).join('\n');
+      this.moveList.classList.remove('move-list-empty');
+    } else {
+      this.moveList.textContent = 'Double-click to type moves';
+      this.moveList.classList.add('move-list-empty');
+    }
   }
 
   _enterMoveInput() {
