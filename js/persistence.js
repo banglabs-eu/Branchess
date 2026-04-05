@@ -20,6 +20,7 @@ function openDB() {
         db.createObjectStore(GAMES_STORE, { keyPath: 'id', autoIncrement: true });
       }
     };
+    req.onblocked = () => reject(new Error('Database blocked — close other Branchess tabs and retry'));
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
   });
@@ -177,11 +178,17 @@ export class DialogManager {
     saveBtn.className = 'panel-btn btn-active';
     saveBtn.textContent = 'Save';
     saveBtn.addEventListener('click', async () => {
-      const name = input.value.trim() || input.value;
-      await savePosition(name, this.state.chess.fen());
-      this.state.status = `Saved: ${name}`;
-      this.state.emit('boardChanged');
-      this._close();
+      try {
+        const name = input.value.trim() || input.value;
+        await savePosition(name, this.state.chess.fen());
+        this.state.status = `Saved: ${name}`;
+        this.state.emit('boardChanged');
+        this._close();
+      } catch (err) {
+        this.state.status = `Save failed: ${err.message}`;
+        this.state.emit('boardChanged');
+        this._close();
+      }
     });
 
     const cancelBtn = document.createElement('button');
@@ -300,12 +307,18 @@ export class DialogManager {
     saveBtn.className = 'panel-btn btn-active';
     saveBtn.textContent = 'Save';
     saveBtn.addEventListener('click', async () => {
-      const name = input.value.trim() || input.value;
-      const treeData = serializeTree(this.state.treeRoot);
-      await saveGame(name, treeData);
-      this.state.status = `Game saved: ${name}`;
-      this.state.emit('boardChanged');
-      this._close();
+      try {
+        const name = input.value.trim() || input.value;
+        const treeData = serializeTree(this.state.treeRoot);
+        await saveGame(name, treeData);
+        this.state.status = `Game saved: ${name}`;
+        this.state.emit('boardChanged');
+        this._close();
+      } catch (err) {
+        this.state.status = `Save failed: ${err.message}`;
+        this.state.emit('boardChanged');
+        this._close();
+      }
     });
 
     const cancelBtn = document.createElement('button');
