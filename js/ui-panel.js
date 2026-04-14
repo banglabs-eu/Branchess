@@ -2,6 +2,8 @@
 import { COLOR_TEXT, COLOR_TEXT_DIM, COLOR_BTN_ACTIVE } from './constants.js';
 import { GameNode } from './game-tree.js';
 import { t, onLangChange } from './i18n.js';
+import { ravToTree, treeToRAV } from './pgn-rav.js';
+import { encodeGameURL, downloadPGN } from './sharing.js';
 
 export class UIPanel {
   constructor(container, state, moveHandler) {
@@ -145,9 +147,13 @@ export class UIPanel {
     this._addBtn(gamesRow, t('loadLichess'), () => this._loadLichess(), 'half');
     gamesSection.appendChild(gamesRow);
     const ioRow2 = this._btnRow();
-    this._addBtn(ioRow2, t('sharePosition'), () => this._sharePosition(), 'half');
-    this._addBtn(ioRow2, t('exportImport'), () => this._showMermaidMenu(), 'half');
+    this._addBtn(ioRow2, t('shareGame'), () => this._shareGame(), 'half');
+    this._addBtn(ioRow2, t('library'), () => this.state.emit('openLibraryDialog'), 'half');
     gamesSection.appendChild(ioRow2);
+    const ioRow3 = this._btnRow();
+    this._addBtn(ioRow3, t('exportImport'), () => this._showMermaidMenu(), 'half');
+    this._addBtn(ioRow3, t('exportPGN'), () => this._exportPGN(), 'half');
+    gamesSection.appendChild(ioRow3);
     btnArea.appendChild(gamesSection);
 
     // --- Board ---
@@ -492,51 +498,55 @@ export class UIPanel {
 
   _importPGN(pgnText) {
     const state = this.state;
-    const chess = state.chess;
 
-    // Reset and replay
-    chess.reset();
+    let root;
     try {
-      chess.loadPgn(pgnText);
+      root = ravToTree(pgnText);
     } catch {
       state.status = 'Invalid PGN';
       state.emit('boardChanged');
       return;
     }
 
-    const history = chess.history({ verbose: true });
-    chess.reset();
+    this._loadTree(root);
+  }
 
-    state.treeRoot = new GameNode(chess.fen());
+  // Load a GameNode tree into the game state (used by import and sharing)
+  _loadTree(root, statusMsg) {
+    const state = this.state;
+
+    state.treeRoot = root;
     state.invalidateTreeLayout();
     state.treeScrollX = 0;
     state.treeScrollY = 0;
     state.treeZoom = 1;
 
-    let node = state.treeRoot;
-    for (const move of history) {
-      const result = chess.move({ from: move.from, to: move.to, promotion: move.promotion });
-      const child = node.addChild(
-        { from: move.from, to: move.to, promotion: move.promotion },
-        chess.fen(),
-        result.san
-      );
-      node = child;
+    // Walk to the last move on the main line
+    let node = root;
+    let count = 0;
+    while (node.children.length) {
+      node = node.children[0];
+      count++;
     }
 
+    state.chess.load(node.fen);
     state.currentNode = node;
-    state.lastMove = history.length ? { from: history[history.length - 1].from, to: history[history.length - 1].to } : null;
+    state.lastMove = node.move ? { from: node.move.from, to: node.move.to } : null;
     state.selectedSq = null;
     state.legalDests = new Set();
     state.gameOver = false;
+    state.lastMovedPieceColor = null;
     state.checkGameOver();
 
-    if (!state.gameOver) {
-      const turn = chess.turn() === 'w' ? 'White' : 'Black';
-      state.status = `PGN loaded (${history.length} moves) \u2014 ${turn} to move`;
+    if (statusMsg) {
+      state.status = statusMsg;
+    } else if (!state.gameOver) {
+      const turn = state.chess.turn() === 'w' ? 'White' : 'Black';
+      state.status = `PGN loaded (${count} moves) \u2014 ${turn} to move`;
     }
     state.invalidateTreeLayout();
     state.emit('boardChanged');
+    state.emit('treeChanged');
   }
 
   _openSaveDialog() {
@@ -547,17 +557,28 @@ export class UIPanel {
     this.state.emit('openLoadDialog');
   }
 
-  _sharePosition() {
-    const fen = this.state.chess.fen();
-    const url = new URL(window.location.href.split('?')[0]);
-    url.searchParams.set('fen', fen);
-    navigator.clipboard.writeText(url.toString()).then(() => {
-      this.state.status = 'URL copied to clipboard';
+  _shareGame() {
+    const { url, tooLong } = encodeGameURL(this.state.treeRoot);
+    if (tooLong) {
+      this.state.status = t('shareTooLong');
+      this.state.emit('boardChanged');
+      // Still copy — it might work in some contexts
+      navigator.clipboard.writeText(url).catch(() => {});
+      return;
+    }
+    navigator.clipboard.writeText(url).then(() => {
+      this.state.status = t('shareCopied');
       this.state.emit('boardChanged');
     }).catch(() => {
-      // Fallback: show in prompt
-      prompt('Share this URL:', url.toString());
+      prompt('Share this URL:', url);
     });
+  }
+
+  _exportPGN() {
+    const date = new Date().toISOString().slice(0, 10);
+    const name = downloadPGN(this.state.treeRoot, `branchess-${date}`);
+    this.state.status = `Exported: ${name}`;
+    this.state.emit('boardChanged');
   }
 
   _exportMermaid() {

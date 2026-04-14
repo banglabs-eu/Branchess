@@ -1,0 +1,32 @@
+[
+  {
+    "slug": "immortal-game",
+    "title": "The Immortal Game",
+    "description": "Anderssen vs Kieseritzky, 1851. A brilliant king's gambit sacrifice.",
+    "tags": ["classic", "sacrifice", "king's gambit"]
+  },
+  {
+    "slug": "italian-game",
+    "title": "Italian Game: Main Lines",
+    "description": "1.e4 e5 2.Nf3 Nc6 3.Bc4 — key variations and plans for both sides.",
+    "tags": ["opening", "e4", "italian"]
+  },
+  {
+    "slug": "sicilian-najdorf",
+    "title": "Sicilian Najdorf: Introduction",
+    "description": "1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 a6 — the sharpest Sicilian.",
+    "tags": ["opening", "e4", "sicilian"]
+  },
+  {
+    "slug": "opera-game",
+    "title": "The Opera Game",
+    "description": "Morphy vs Duke of Brunswick & Count Isouard, 1858. A model attacking game.",
+    "tags": ["classic", "attack", "philidor"]
+  },
+  {
+    "slug": "scholars-mate",
+    "title": "Scholar's Mate & How to Punish It",
+    "description": "The 4-move checkmate, why it works, and how to refute it.",
+    "tags": ["beginner", "tactics", "trap"]
+  }
+]

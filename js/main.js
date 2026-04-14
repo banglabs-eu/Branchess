@@ -12,6 +12,7 @@ import { BoardSetupPanel } from './board-setup.js';
 import { DialogManager } from './persistence.js';
 import { bang, fireworksShow } from './bang.js';
 import { LANGUAGES, getLang, setLang, onLangChange, t } from './i18n.js';
+import { decodeGameFromHash, loadStudy } from './sharing.js';
 
 // Initialize — load FEN from URL if present
 const chess = new Chess();
@@ -227,9 +228,31 @@ state.on('boardChanged', () => {
   }
 });
 
+// Wire loadTree event (used by Library dialog and URL sharing)
+state.on('loadTree', (root, statusMsg) => {
+  uiPanel._loadTree(root, statusMsg);
+});
+
 // Initial render
 boardView.render();
 treeView.render();
+
+// Load shared game or study from URL hash (#g=... or #s=...)
+const hashData = decodeGameFromHash();
+if (hashData) {
+  if (hashData.type === 'game' && hashData.root) {
+    uiPanel._loadTree(hashData.root, 'Shared game loaded');
+  } else if (hashData.type === 'study' && hashData.slug) {
+    state.status = 'Loading study...';
+    state.emit('boardChanged');
+    loadStudy(hashData.slug).then(root => {
+      uiPanel._loadTree(root, `Study loaded: ${hashData.slug}`);
+    }).catch(() => {
+      state.status = 'Study not found';
+      state.emit('boardChanged');
+    });
+  }
+}
 
 // Page unload
 window.addEventListener('beforeunload', () => engine.terminate());

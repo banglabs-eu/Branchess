@@ -2,6 +2,8 @@
 // Replaces filesystem-based persistence from Branchess.py
 
 import { serializeTree, deserializeTree } from './game-tree.js';
+import { loadStudyIndex, loadStudy } from './sharing.js';
+import { t } from './i18n.js';
 
 const DB_NAME = 'Branchess';
 const DB_VERSION = 2;
@@ -103,6 +105,7 @@ export class DialogManager {
     state.on('openMermaidMenu', () => this._showMermaidMenu());
     state.on('openPlayEngineDialog', () => this._showPlayEngineDialog());
     state.on('openStudyChapterDialog', (chapters, onSelect) => this._showStudyChapterDialog(chapters, onSelect));
+    state.on('openLibraryDialog', () => this._showLibraryDialog());
   }
 
   _close() {
@@ -772,8 +775,93 @@ export class DialogManager {
     });
   }
 
+  async _showLibraryDialog() {
+    this._showOverlay();
+    this.overlay.innerHTML = '';
+    this._currentDialog = 'library';
+
+    const box = document.createElement('div');
+    box.className = 'dialog load-dialog';
+
+    const header = document.createElement('div');
+    header.className = 'dialog-header';
+    const title = document.createElement('div');
+    title.className = 'dialog-title';
+    title.textContent = t('libraryTitle');
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'dialog-close';
+    closeBtn.textContent = '\u00d7';
+    closeBtn.addEventListener('click', () => this._close());
+    header.append(title, closeBtn);
+    box.appendChild(header);
+
+    const list = document.createElement('div');
+    list.className = 'load-list';
+
+    const loading = document.createElement('div');
+    loading.className = 'dialog-label';
+    loading.style.padding = '12px';
+    loading.textContent = t('libraryLoading');
+    list.appendChild(loading);
+    box.appendChild(list);
+    this.overlay.appendChild(box);
+
+    try {
+      const studies = await loadStudyIndex();
+      list.innerHTML = '';
+
+      for (const study of studies) {
+        const item = document.createElement('div');
+        item.className = 'load-item';
+        item.style.cursor = 'pointer';
+
+        const info = document.createElement('div');
+        info.className = 'load-item-info';
+        const nameEl = document.createElement('div');
+        nameEl.className = 'load-item-name';
+        nameEl.textContent = study.title;
+        const descEl = document.createElement('div');
+        descEl.className = 'load-item-date';
+        descEl.textContent = study.description;
+        info.append(nameEl, descEl);
+
+        const tags = document.createElement('div');
+        tags.className = 'load-item-tags';
+        tags.style.fontSize = '11px';
+        tags.style.color = '#969696';
+        tags.style.marginTop = '2px';
+        tags.textContent = (study.tags || []).join(' \u00b7 ');
+        info.appendChild(tags);
+
+        item.appendChild(info);
+
+        item.addEventListener('click', async () => {
+          this.state.status = `Loading: ${study.title}...`;
+          this.state.emit('boardChanged');
+          this._close();
+          try {
+            const root = await loadStudy(study.slug);
+            this.state.emit('loadTree', root, `${t('studyLoaded')}: ${study.title}`);
+          } catch (err) {
+            this.state.status = `Error: ${err.message}`;
+            this.state.emit('boardChanged');
+          }
+        });
+
+        list.appendChild(item);
+      }
+    } catch {
+      list.innerHTML = '';
+      const err = document.createElement('div');
+      err.className = 'dialog-label';
+      err.style.padding = '12px';
+      err.textContent = t('libraryError');
+      list.appendChild(err);
+    }
+  }
+
   handleKeydown(e) {
-    if (this._currentDialog === 'save' || this._currentDialog === 'load') {
+    if (this._currentDialog === 'save' || this._currentDialog === 'load' || this._currentDialog === 'library') {
       if (e.key === 'Escape') this._close();
     }
   }
