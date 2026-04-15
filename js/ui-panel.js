@@ -176,7 +176,16 @@ export class UIPanel {
 
   _updateStatus() {
     const s = this.state.status;
-    this.statusEl.textContent = s;
+
+    // Rebuild status: optional spinner + text
+    this.statusEl.innerHTML = '';
+    if (this.state.engineThinking) {
+      const spinner = document.createElement('span');
+      spinner.className = 'thinking-spinner';
+      this.statusEl.appendChild(spinner);
+    }
+    this.statusEl.appendChild(document.createTextNode(s));
+
     if (this.state.engineThinking) {
       this.statusEl.style.color = 'rgb(220,180,80)';
     } else if (this.state.gameOver) {

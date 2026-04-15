@@ -9,6 +9,7 @@ export class MoveHandler {
     this.boardView = boardView;
     this.animation = animationManager;
     this.engine = engine;
+    this._analyzeRequestId = 0;
 
     this._bindBoardClicks();
   }
@@ -32,12 +33,19 @@ export class MoveHandler {
         this._dragFromSq = sq;
         this._dragMoved = false;
 
-        // Select the piece (for highlights)
-        if (!this.state.engineThinking) {
-          this.state.selectedSq = sq;
-          this.state.legalDests = new Set();
-          this.state.emit('boardChanged');
+        // Interrupt engine and clear best-move hint
+        if (this.state.engineThinking) {
+          this._cancelEngine();
         }
+        this._analyzeRequestId = (this._analyzeRequestId || 0) + 1;
+        if (this.state.bestMoveHint) {
+          this.state.bestMoveHint = null;
+        }
+
+        // Select the piece (for highlights)
+        this.state.selectedSq = sq;
+        this.state.legalDests = new Set();
+        this.state.emit('boardChanged');
 
         // Create ghost element
         const pieceEl = sqEl.querySelector('.piece');
@@ -143,17 +151,16 @@ export class MoveHandler {
     const state = this.state;
     if (state.promotingFrom !== null) return;
 
-    // Allow interrupting the engine by selecting a piece
+    // Interrupt ongoing engine analysis, then fall through to normal click handling
     if (state.engineThinking) {
-      const chess = state.chess;
-      const piece = chess.get(sq);
-      if (piece) {
-        this._cancelEngine();
-        state.selectedSq = sq;
-        state.legalDests = new Set();
-        state.emit('boardChanged');
-      }
-      return;
+      this._cancelEngine();
+    }
+    // Invalidate any pending analysis result so it can't overwrite state later
+    this._analyzeRequestId = (this._analyzeRequestId || 0) + 1;
+
+    // Any board interaction clears the best-move suggestion
+    if (state.bestMoveHint) {
+      state.bestMoveHint = null;
     }
 
     if (state.setupMode) {
@@ -441,30 +448,42 @@ export class MoveHandler {
       fen = parts.join(' ');
     }
 
+    const requestId = ++this._analyzeRequestId;
     state.engineThinking = true;
+    this._engineCancelled = false;
+    state.bestMoveHint = null;
     const colorName = forceColor === 'w' ? 'White' : forceColor === 'b' ? 'Black' : '';
     state.status = colorName ? `Analyzing best for ${colorName}...` : t('analyzing');
     state.emit('boardChanged');
 
+    let result;
     try {
-      const result = await this.engine.analyze(fen);
-      if (!result) {
-        state.status = 'No analysis available';
-      } else {
-        state.bestMoveHint = { from: result.move.from, to: result.move.to };
-        const score = result.score;
-        const prefix = colorName ? `Best for ${colorName}` : 'Best';
-        if (Math.abs(score) >= 10000) {
-          const mateIn = Math.ceil((10000 - Math.abs(score % 10000)) || 1);
-          state.status = `${prefix}: ${result.move.from}${result.move.to} — Mate in ${mateIn}`;
-        } else {
-          const eval_ = (score / 100).toFixed(1);
-          const sign = score >= 0 ? '+' : '';
-          state.status = `${prefix}: ${result.move.from}${result.move.to} — Eval: ${sign}${eval_}`;
-        }
-      }
+      result = await this.engine.analyze(fen);
     } catch {
+      if (requestId !== this._analyzeRequestId || this._engineCancelled) return;
       state.status = 'Analysis failed';
+      state.engineThinking = false;
+      state.emit('boardChanged');
+      return;
+    }
+
+    // If the user cancelled or started another analysis, drop this result
+    if (requestId !== this._analyzeRequestId || this._engineCancelled) return;
+
+    if (!result) {
+      state.status = 'No analysis available';
+    } else {
+      state.bestMoveHint = { from: result.move.from, to: result.move.to };
+      const score = result.score;
+      const prefix = colorName ? `Best for ${colorName}` : 'Best';
+      if (Math.abs(score) >= 10000) {
+        const mateIn = Math.ceil((10000 - Math.abs(score % 10000)) || 1);
+        state.status = `${prefix}: ${result.move.from}${result.move.to} — Mate in ${mateIn}`;
+      } else {
+        const eval_ = (score / 100).toFixed(1);
+        const sign = score >= 0 ? '+' : '';
+        state.status = `${prefix}: ${result.move.from}${result.move.to} — Eval: ${sign}${eval_}`;
+      }
     }
 
     state.engineThinking = false;
