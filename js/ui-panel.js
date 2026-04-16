@@ -93,11 +93,6 @@ export class UIPanel {
       this.treeContainer.appendChild(treeHint);
     }
 
-    // Status bar (bottom of tree area)
-    this.statusEl = document.createElement('div');
-    this.statusEl.className = 'panel-status';
-    this.treeAreaEl.appendChild(this.statusEl);
-
     // --- Info area (bottom-left quarter) ---
     this.infoAreaEl.innerHTML = '';
 
@@ -109,6 +104,11 @@ export class UIPanel {
     // Moves section (right half of info area)
     const movesSection = document.createElement('div');
     movesSection.className = 'moves-section';
+
+    // Status (whose turn) at top of moves section
+    this.statusEl = document.createElement('div');
+    this.statusEl.className = 'panel-status';
+    movesSection.appendChild(this.statusEl);
 
     this.branchInfo = document.createElement('div');
     this.branchInfo.className = 'branch-info';

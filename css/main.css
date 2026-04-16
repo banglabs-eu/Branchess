@@ -275,15 +275,14 @@ html, body {
 }
 
 .panel-status {
-  font-size: 11px;
-  padding: 2px 4px;
+  font-size: 12px;
+  padding: 2px 0;
   font-weight: 600;
   display: flex;
   align-items: center;
   gap: 4px;
   min-height: 0;
   flex-shrink: 0;
-  border-top: 1px solid #3a3a3a;
 }
 
 .thinking-spinner {
