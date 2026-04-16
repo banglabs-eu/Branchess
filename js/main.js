@@ -330,10 +330,15 @@ function makeDraggable(el, handleSelector) {
 
   el.addEventListener('mousedown', (e) => {
     if (handleSelector && !e.target.closest(handleSelector)) return;
-    if (e.target.closest('.square, .move-input, .note-area, .move-list, .resize-handle, input, textarea, button, select')) return;
+    if (e.target.closest('.square, .move-input, .note-area, .move-list, input, textarea, button, select')) return;
+    // Don't drag if near a corner (let resize take over)
+    const rect = el.getBoundingClientRect();
+    const cx = e.clientX, cy = e.clientY;
+    const nearL = cx - rect.left < 14, nearR = rect.right - cx < 14;
+    const nearT = cy - rect.top < 14, nearB = rect.bottom - cy < 14;
+    if ((nearL || nearR) && (nearT || nearB)) return;
     e.preventDefault();
     dragging = true;
-    const rect = el.getBoundingClientRect();
     origX = rect.left; origY = rect.top;
     startX = e.clientX; startY = e.clientY;
   });
@@ -355,28 +360,36 @@ const infoArea = document.getElementById('info-area');
 makeDraggable(boardArea);
 makeDraggable(infoArea, '.float-title');
 
-// --- Resizable board ---
-const resizeHandle = document.createElement('div');
-resizeHandle.className = 'resize-handle';
-boardArea.appendChild(resizeHandle);
-
+// --- Resizable board by dragging corners ---
 let resizing = false, resizeStartX, resizeStartY, resizeStartSize;
+const EDGE = 12; // px from corner to trigger resize
 
-resizeHandle.addEventListener('mousedown', (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  resizing = true;
-  resizeStartX = e.clientX;
-  resizeStartY = e.clientY;
-  resizeStartSize = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--board-size'));
+boardArea.addEventListener('mousedown', (e) => {
+  // Check if near any corner of the board area
+  const rect = boardArea.getBoundingClientRect();
+  const ex = e.clientX, ey = e.clientY;
+  const nearLeft = ex - rect.left < EDGE;
+  const nearRight = rect.right - ex < EDGE;
+  const nearTop = ey - rect.top < EDGE;
+  const nearBottom = rect.bottom - ey < EDGE;
+
+  if ((nearLeft || nearRight) && (nearTop || nearBottom)) {
+    e.preventDefault();
+    e.stopPropagation();
+    resizing = true;
+    resizeStartX = ex;
+    resizeStartY = ey;
+    // Get actual rendered board size from the board element
+    resizeStartSize = boardContainer.getBoundingClientRect().width;
+  }
 });
 
 window.addEventListener('mousemove', (e) => {
   if (!resizing) return;
   const dx = e.clientX - resizeStartX;
   const dy = e.clientY - resizeStartY;
-  const delta = Math.max(dx, dy);
-  const newSize = Math.max(100, Math.min(resizeStartSize + delta, Math.min(window.innerWidth, window.innerHeight) * 0.8));
+  const delta = (dx + dy) / 2;
+  const newSize = Math.max(80, Math.min(resizeStartSize + delta, Math.min(window.innerWidth, window.innerHeight) * 0.85));
   document.documentElement.style.setProperty('--board-size', newSize + 'px');
 });
 
