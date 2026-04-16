@@ -334,6 +334,12 @@ function makeDraggable(el, handleSelector) {
     e.preventDefault();
     dragging = true;
     const r = el.getBoundingClientRect();
+    // Pin position to viewport coords and clear any CSS centering transforms
+    el.style.left = r.left + 'px';
+    el.style.top = r.top + 'px';
+    el.style.right = 'auto';
+    el.style.bottom = 'auto';
+    el.style.transform = 'none';
     origX = r.left; origY = r.top;
     startX = e.clientX; startY = e.clientY;
   });
@@ -342,8 +348,6 @@ function makeDraggable(el, handleSelector) {
     if (!dragging) return;
     el.style.left = (origX + e.clientX - startX) + 'px';
     el.style.top = (origY + e.clientY - startY) + 'px';
-    el.style.right = 'auto';
-    el.style.bottom = 'auto';
   });
 
   window.addEventListener('mouseup', () => { dragging = false; });
