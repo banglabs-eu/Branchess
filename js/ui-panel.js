@@ -415,12 +415,17 @@ export class UIPanel {
 
     // Move list with annotations — highlight current move
     const path = state.currentNode.pathFromRoot();
+    const rootFen = path[0].fen || '';
+    const rootTurn = rootFen.split(' ')[1] || 'w';
     const nodes = path.slice(1).filter(n => n.san);
     const currentId = state.currentNode.id;
 
+    // If root was black to move, insert a placeholder for white's skipped turn
+    const displayNodes = rootTurn === 'b' ? [{ san: '--', annotation: '', id: null }, ...nodes] : [...nodes];
+
     this.moveList.innerHTML = '';
-    if (nodes.length) {
-      for (let i = 0; i < nodes.length; i += 2) {
+    if (displayNodes.length) {
+      for (let i = 0; i < displayNodes.length; i += 2) {
         const num = Math.floor(i / 2) + 1;
         const lineEl = document.createElement('div');
         lineEl.className = 'move-line';
@@ -431,16 +436,16 @@ export class UIPanel {
         lineEl.appendChild(numSpan);
 
         const w = document.createElement('span');
-        w.className = 'move-san' + (nodes[i].id === currentId ? ' move-current' : '');
-        w.textContent = nodes[i].san + (nodes[i].annotation || '');
+        w.className = 'move-san' + (displayNodes[i].id === currentId ? ' move-current' : '');
+        w.textContent = displayNodes[i].san + (displayNodes[i].annotation || '');
         lineEl.appendChild(w);
 
-        if (i + 1 < nodes.length) {
+        if (i + 1 < displayNodes.length) {
           const spacer = document.createTextNode('  ');
           lineEl.appendChild(spacer);
           const b = document.createElement('span');
-          b.className = 'move-san' + (nodes[i + 1].id === currentId ? ' move-current' : '');
-          b.textContent = nodes[i + 1].san + (nodes[i + 1].annotation || '');
+          b.className = 'move-san' + (displayNodes[i + 1].id === currentId ? ' move-current' : '');
+          b.textContent = displayNodes[i + 1].san + (displayNodes[i + 1].annotation || '');
           lineEl.appendChild(b);
         }
         this.moveList.appendChild(lineEl);
