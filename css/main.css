@@ -71,7 +71,7 @@ body {
   position: fixed;
   z-index: 600;
   display: flex;
-  flex-direction: column;
+  align-items: flex-start;
   cursor: move;
   border: 2px solid #555;
   border-radius: 6px;
@@ -80,13 +80,6 @@ body {
   box-shadow: 0 4px 24px rgba(0,0,0,0.5);
   bottom: 16px;
   left: 16px;
-  overflow: visible;
-}
-
-/* Inner row: tray + board + buttons + info */
-#board-area-row {
-  display: flex;
-  align-items: flex-start;
 }
 
 /* Moves panel snapped to board */
@@ -108,19 +101,6 @@ body {
   flex-shrink: 0;
 }
 
-/* Resize bar at bottom of board area */
-.resize-bar {
-  width: 100%;
-  height: 8px;
-  cursor: ns-resize;
-  background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.1));
-  border-radius: 0 0 6px 6px;
-  flex-shrink: 0;
-  transition: background 0.15s;
-}
-.resize-bar:hover {
-  background: linear-gradient(to bottom, transparent, rgba(100, 200, 255, 0.3));
-}
 
 .file-labels {
   display: grid;
