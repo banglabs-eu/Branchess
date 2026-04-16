@@ -103,8 +103,10 @@ export class UIPanel {
     this.posReadyBtn.addEventListener('click', () => {
       const fen = this.state.chess.fen();
       this.state.positionDirty = false;
-      this.state.resetTree(fen);
-      this.state.status = t('whiteToMove');
+      // Re-load FEN cleanly so chess.js recognizes legal moves again
+      forceLoadFen(this.state.chess, fen);
+      this.state.resetTree(this.state.chess.fen());
+      this.state.status = this.state.chess.turn() === 'w' ? t('whiteToMove') : t('blackToMove');
       this.state.emit('boardChanged');
       this.state.emit('treeChanged');
     });
