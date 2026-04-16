@@ -31,7 +31,12 @@ html.theme-banglabs, html.theme-banglabs #app {
   --body-bg: #050510;
 }
 
-html, body {
+html {
+  /* Scale text with viewport — comfortable on 1080p through 4K */
+  font-size: clamp(14px, 1.1vw, 22px);
+}
+
+body {
   height: 100%;
   background: var(--body-bg);
   color: var(--text);
@@ -302,14 +307,14 @@ html, body {
 }
 
 .panel-title {
-  font-size: 15px;
+  font-size: 1rem;
   font-weight: 600;
   padding: 2px 6px;
   color: var(--text);
 }
 
 .panel-status {
-  font-size: 12px;
+  font-size: 0.85rem;
   padding: 2px 0;
   font-weight: 600;
   display: flex;
@@ -392,7 +397,7 @@ html, body {
 }
 
 .branch-info {
-  font-size: 11px;
+  font-size: 0.75rem;
   color: var(--text-dim);
   padding: 2px 0;
   font-family: 'Inter', sans-serif;
@@ -400,7 +405,7 @@ html, body {
 }
 
 .move-list {
-  font-size: 13px;
+  font-size: 0.9rem;
   color: var(--text-dim);
   padding: 2px 0;
   font-family: 'JetBrains Mono', monospace;
@@ -421,7 +426,7 @@ html, body {
   width: 100%;
   margin: 0;
   padding: 3px 4px;
-  font-size: 12px;
+  font-size: 0.85rem;
   font-family: 'JetBrains Mono', monospace;
   background: #1a1a1a;
   color: var(--text);
@@ -444,7 +449,7 @@ html, body {
   width: 100%;
   margin: 0;
   padding: 3px 4px;
-  font-size: 12px;
+  font-size: 0.85rem;
   font-family: 'Inter', sans-serif;
   background: #1a1a1a;
   color: var(--text);
@@ -502,7 +507,7 @@ html, body {
   border: none;
   border-radius: 6px;
   padding: 6px 8px;
-  font-size: 13px;
+  font-size: 0.85rem;
   font-family: 'Inter', sans-serif;
   cursor: pointer;
   transition: background 0.15s;
@@ -625,7 +630,7 @@ html, body {
   pointer-events: none;
 }
 .captured-count {
-  font-size: 8px;
+  font-size: 0.55rem;
   color: var(--text-dim);
   font-family: 'JetBrains Mono', monospace;
   line-height: 1;
@@ -662,7 +667,7 @@ html, body {
 }
 
 .menu-section-title {
-  font-size: 10px;
+  font-size: 0.7rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -676,7 +681,7 @@ html, body {
   justify-content: space-between;
   padding: 7px 14px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 0.9rem;
   font-family: 'Inter', sans-serif;
   color: var(--text);
   transition: background 0.12s;
@@ -684,7 +689,7 @@ html, body {
 .menu-item:hover { background: var(--btn-hover); }
 
 .menu-shortcut {
-  font-size: 11px;
+  font-size: 0.75rem;
   font-family: 'JetBrains Mono', monospace;
   color: var(--text-dim);
   margin-left: 16px;
@@ -709,7 +714,7 @@ html, body {
   padding: 2px 6px;
   cursor: move;
   user-select: none;
-  font-size: 11px;
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--text-dim);
   border-bottom: 1px solid #3a3a3a;

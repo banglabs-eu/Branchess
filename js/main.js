@@ -330,7 +330,7 @@ function makeDraggable(el, handleSelector) {
 
   el.addEventListener('mousedown', (e) => {
     if (handleSelector && !e.target.closest(handleSelector)) return;
-    if (e.target.closest('.square, .move-input, .note-area, .move-list, .board-resize-grip, input, textarea, button, select')) return;
+    if (e.target.closest('.square, .move-input, .note-area, .move-list, .board-resize-grip, .captured-cell, .captured-tray, input, textarea, button, select')) return;
     e.preventDefault();
     dragging = true;
     const r = el.getBoundingClientRect();
