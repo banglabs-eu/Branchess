@@ -223,8 +223,8 @@ html, body {
   background: var(--panel-bg);
   display: flex;
   flex-direction: column;
-  padding: 8px;
-  overflow-y: auto;
+  padding: 4px 8px;
+  overflow: hidden;
 }
 
 #setup-panel, #board-setup-panel {
@@ -232,26 +232,29 @@ html, body {
 }
 
 .panel-title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
-  padding: 4px 6px;
+  padding: 2px 6px;
   color: var(--text);
 }
 
 .panel-status {
-  font-size: 13px;
-  padding: 2px 6px 6px;
+  font-size: 12px;
+  padding: 3px 6px;
   font-weight: 600;
   display: flex;
   align-items: center;
   gap: 6px;
-  min-height: 18px;
+  min-height: 0;
+  flex-shrink: 0;
+  border-top: 1px solid #3a3a3a;
+  margin-top: auto;
 }
 
 .thinking-spinner {
   display: inline-block;
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border: 2px solid rgba(220,180,80,0.25);
   border-top-color: rgb(220,180,80);
   border-radius: 50%;
@@ -308,10 +311,10 @@ html, body {
 
 .tree-container {
   flex: 1;
-  min-height: 120px;
+  min-height: 80px;
   background: #1e1c1a;
   border-radius: 4px;
-  margin: 4px 0;
+  margin: 2px 0;
   overflow: hidden;
   cursor: grab;
 }
@@ -321,23 +324,25 @@ html, body {
 }
 
 .branch-info {
-  font-size: 15px;
+  font-size: 12px;
   color: var(--text-dim);
-  padding: 4px 6px;
+  padding: 2px 6px;
   font-family: 'Inter', sans-serif;
+  flex-shrink: 0;
 }
 
 .move-list {
-  font-size: 15px;
+  font-size: 14px;
   color: var(--text-dim);
-  padding: 2px 6px 8px;
+  padding: 2px 6px 4px;
   font-family: 'JetBrains Mono', monospace;
   white-space: pre-wrap;
-  line-height: 1.5;
-  min-height: 28px;
-  max-height: 120px;
+  line-height: 1.4;
+  min-height: 20px;
+  max-height: 25vh;
   overflow-y: auto;
   cursor: text;
+  flex-shrink: 0;
 }
 
 .move-list-empty {
@@ -490,15 +495,14 @@ html, body {
 
 /* Piece tray */
 .captured-tray {
-  padding: 4px 6px;
-  min-height: 0;
-  border-bottom: 1px solid #3a3a3a;
+  padding: 2px 4px;
+  flex-shrink: 0;
 }
 .captured-row {
   display: flex;
-  gap: 2px;
+  gap: 0;
   align-items: center;
-  padding: 2px 0;
+  padding: 0;
 }
 .captured-cell {
   display: flex;
@@ -506,20 +510,21 @@ html, body {
   align-items: center;
   gap: 0;
   cursor: grab;
-  padding: 2px 4px;
-  border-radius: 4px;
+  padding: 1px 3px;
+  border-radius: 3px;
   transition: background 0.12s;
+  flex: 1;
 }
 .captured-cell:hover {
   background: var(--btn-hover);
 }
 .captured-piece {
-  font-size: 22px;
+  font-size: 18px;
   line-height: 1;
   pointer-events: none;
 }
 .captured-count {
-  font-size: 10px;
+  font-size: 9px;
   color: var(--text-dim);
   font-family: 'JetBrains Mono', monospace;
   line-height: 1;
@@ -545,9 +550,7 @@ html, body {
 .hamburger-btn:hover { background: #646464; }
 
 .hamburger-menu {
-  position: absolute;
-  top: 100%;
-  left: 0;
+  position: fixed;
   z-index: 100;
   background: var(--panel-bg);
   border: 1px solid #3a3a3a;

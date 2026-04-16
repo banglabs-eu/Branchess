@@ -42,14 +42,15 @@ export class UIPanel {
     title.className = 'panel-title';
     title.textContent = 'Branchess {\u2657}';
 
-    const hamburgerBtn = document.createElement('button');
-    hamburgerBtn.className = 'hamburger-btn';
-    hamburgerBtn.ariaLabel = 'Menu';
-    hamburgerBtn.textContent = '\u2630';
-    hamburgerBtn.addEventListener('click', (e) => {
+    this._hamburgerBtn = document.createElement('button');
+    this._hamburgerBtn.className = 'hamburger-btn';
+    this._hamburgerBtn.ariaLabel = 'Menu';
+    this._hamburgerBtn.textContent = '\u2630';
+    this._hamburgerBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       this._toggleMenu();
     });
+    const hamburgerBtn = this._hamburgerBtn;
 
     const helpBtn = document.createElement('button');
     helpBtn.id = 'help-btn';
@@ -57,19 +58,14 @@ export class UIPanel {
     helpBtn.ariaLabel = 'Help';
     helpBtn.textContent = '?';
     titleRow.append(hamburgerBtn, title, helpBtn);
-
-    // Hamburger dropdown menu
-    this._menuEl = this._buildMenu();
-    titleRow.appendChild(this._menuEl);
-
     this.container.appendChild(titleRow);
 
-    // Status
-    this.statusEl = document.createElement('div');
-    this.statusEl.className = 'panel-status';
-    this.container.appendChild(this.statusEl);
+    // Hamburger dropdown menu (appended to body to escape panel overflow)
+    if (this._menuEl) this._menuEl.remove();
+    this._menuEl = this._buildMenu();
+    document.body.appendChild(this._menuEl);
 
-    // Captured pieces tray
+    // Piece tray (draggable pieces)
     this.capturedEl = document.createElement('div');
     this.capturedEl.className = 'captured-tray';
     this.container.appendChild(this.capturedEl);
@@ -98,7 +94,7 @@ export class UIPanel {
       this.treeContainer.appendChild(treeHint);
     }
 
-    // Branch info + move list
+    // Move list + branch info (bottom section)
     this.branchInfo = document.createElement('div');
     this.branchInfo.className = 'branch-info';
     this.container.appendChild(this.branchInfo);
@@ -127,6 +123,11 @@ export class UIPanel {
     });
     this.moveInput.addEventListener('blur', () => this._exitMoveInput());
     this.moveInput.addEventListener('input', () => this._validateMoveInput());
+
+    // Status bar (slim, at bottom)
+    this.statusEl = document.createElement('div');
+    this.statusEl.className = 'panel-status';
+    this.container.appendChild(this.statusEl);
 
     this._updateStatus();
     this._updateCapturedPieces();
@@ -221,6 +222,10 @@ export class UIPanel {
     if (open) {
       this._closeMenu();
     } else {
+      // Position below the hamburger button
+      const rect = this._hamburgerBtn.getBoundingClientRect();
+      this._menuEl.style.left = rect.left + 'px';
+      this._menuEl.style.top = rect.bottom + 4 + 'px';
       this._menuEl.style.display = '';
       // Close on next click outside
       this._menuCloseHandler = () => this._closeMenu();
