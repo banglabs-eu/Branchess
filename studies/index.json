@@ -28,5 +28,65 @@
     "title": "Scholar's Mate & How to Punish It",
     "description": "The 4-move checkmate, why it works, and how to refute it.",
     "tags": ["beginner", "tactics", "trap"]
+  },
+  {
+    "slug": "ruy-lopez",
+    "title": "Ruy Lopez: Main Lines",
+    "description": "1.e4 e5 2.Nf3 Nc6 3.Bb5 — Morphy Defense, Closed and Open variations.",
+    "tags": ["opening", "e4", "ruy lopez"]
+  },
+  {
+    "slug": "queens-gambit",
+    "title": "Queen's Gambit: Accepted & Declined",
+    "description": "1.d4 d5 2.c4 — both QGA and QGD main lines with key variations.",
+    "tags": ["opening", "d4", "queen's gambit"]
+  },
+  {
+    "slug": "french-defense",
+    "title": "French Defense: Key Variations",
+    "description": "1.e4 e6 — Advance, Exchange, and Winawer variations explained.",
+    "tags": ["opening", "e4", "french"]
+  },
+  {
+    "slug": "caro-kann",
+    "title": "Caro-Kann Defense",
+    "description": "1.e4 c6 — Advance, Classical, and Exchange variations.",
+    "tags": ["opening", "e4", "caro-kann"]
+  },
+  {
+    "slug": "london-system",
+    "title": "London System for White",
+    "description": "1.d4 d5 2.Bf4 — a reliable system with a clear setup and plans.",
+    "tags": ["opening", "d4", "london"]
+  },
+  {
+    "slug": "evergreen-game",
+    "title": "The Evergreen Game",
+    "description": "Anderssen vs Dufresne, 1852. An Evans Gambit with stunning sacrifices.",
+    "tags": ["classic", "sacrifice", "evans gambit"]
+  },
+  {
+    "slug": "game-of-century",
+    "title": "The Game of the Century",
+    "description": "Byrne vs Fischer, 1956. A 13-year-old's queen sacrifice for the ages.",
+    "tags": ["classic", "sacrifice", "fischer"]
+  },
+  {
+    "slug": "basic-endgames",
+    "title": "Basic Endgames: King & Pawn",
+    "description": "Opposition, key squares, and the technique to promote a pawn.",
+    "tags": ["endgame", "beginner", "king and pawn"]
+  },
+  {
+    "slug": "kasparov-topalov",
+    "title": "Kasparov's Immortal",
+    "description": "Kasparov vs Topalov, Wijk aan Zee 1999. A king hunt across the entire board.",
+    "tags": ["classic", "sacrifice", "kasparov"]
+  },
+  {
+    "slug": "back-rank-tactics",
+    "title": "Back Rank Tactics",
+    "description": "Instructive back rank mate patterns — the most common tactical theme.",
+    "tags": ["tactics", "endgame", "back rank"]
   }
 ]
