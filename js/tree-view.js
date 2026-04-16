@@ -738,7 +738,8 @@ export class TreeView {
 
   _drawOpenings(root, layout, toPx, r, zoom, areaW, areaH) {
     // Only show openings if game started from standard position
-    if (root.fen !== STARTING_FEN) return;
+    const startPos = STARTING_FEN.split(' ')[0];
+    if (!(root.fen || '').startsWith(startPos)) return;
     const matches = this._detectOpenings(root);
 
     for (const match of matches) {
@@ -814,8 +815,9 @@ export class TreeView {
 
   _buildGhostTree(currentNode) {
     // Only show openings if the game started from the standard position
-    const root = currentNode.pathFromRoot()[0];
-    if (root.fen !== STARTING_FEN) return null;
+    const rootFen = currentNode.pathFromRoot()[0].fen || '';
+    const startPos = STARTING_FEN.split(' ')[0];
+    if (!rootFen.startsWith(startPos)) return null;
 
     // Build a virtual tree of all opening continuations from the current position
     const pathSans = currentNode.pathFromRoot().slice(1).map(n => n.san);
