@@ -69,21 +69,57 @@
 /* Zoom controls */
 .tree-zoom-bar {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  bottom: 12px;
+  right: 12px;
   display: flex;
-  gap: 3px;
+  align-items: center;
+  gap: 6px;
   z-index: 510;
 }
 
+.tree-zoom-label {
+  color: #888;
+  font-size: 16px;
+  font-weight: 700;
+  user-select: none;
+}
+
+.tree-zoom-slider {
+  width: 120px;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(80, 80, 80, 0.7);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+.tree-zoom-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ccc;
+  border: 2px solid #555;
+  cursor: pointer;
+}
+.tree-zoom-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ccc;
+  border: 2px solid #555;
+  cursor: pointer;
+}
+
 .tree-zoom-btn {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border: none;
   border-radius: 4px;
   background: rgba(80, 80, 80, 0.7);
   color: #dcdcdc;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   display: flex;

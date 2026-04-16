@@ -22,7 +22,12 @@ export class TreeView {
 
     this._build();
     state.on('treeChanged', () => this.render());
-    state.on('boardChanged', () => this.render());
+    state.on('boardChanged', () => {
+      // Reset scroll to keep current move centered on navigation
+      state.treeScrollX = 0;
+      state.treeScrollY = 0;
+      this.render();
+    });
   }
 
   _build() {
@@ -61,25 +66,32 @@ export class TreeView {
 
     this.container.appendChild(this.svg);
 
-    // Zoom controls
+    // Zoom slider
     const zoomBar = document.createElement('div');
     zoomBar.className = 'tree-zoom-bar';
-    const zoomIn = document.createElement('button');
-    zoomIn.className = 'tree-zoom-btn';
-    zoomIn.textContent = '+';
-    zoomIn.addEventListener('click', (e) => {
+
+    const zoomLabel = document.createElement('span');
+    zoomLabel.className = 'tree-zoom-label';
+    zoomLabel.textContent = '−';
+
+    const zoomSlider = document.createElement('input');
+    zoomSlider.type = 'range';
+    zoomSlider.className = 'tree-zoom-slider';
+    zoomSlider.min = '30';
+    zoomSlider.max = '400';
+    zoomSlider.value = String(Math.round(this.state.treeZoom * 100));
+    zoomSlider.addEventListener('input', (e) => {
       e.stopPropagation();
-      this.state.treeZoom = Math.min(4, this.state.treeZoom * 1.3);
+      this.state.treeZoom = parseInt(zoomSlider.value) / 100;
+      this.state.treeScrollX = 0;
+      this.state.treeScrollY = 0;
       this.render();
     });
-    const zoomOut = document.createElement('button');
-    zoomOut.className = 'tree-zoom-btn';
-    zoomOut.textContent = '−';
-    zoomOut.addEventListener('click', (e) => {
-      e.stopPropagation();
-      this.state.treeZoom = Math.max(0.3, this.state.treeZoom / 1.3);
-      this.render();
-    });
+
+    const zoomLabelPlus = document.createElement('span');
+    zoomLabelPlus.className = 'tree-zoom-label';
+    zoomLabelPlus.textContent = '+';
+
     const zoomReset = document.createElement('button');
     zoomReset.className = 'tree-zoom-btn';
     zoomReset.textContent = '⊙';
@@ -88,9 +100,12 @@ export class TreeView {
       this.state.treeZoom = 1;
       this.state.treeScrollX = 0;
       this.state.treeScrollY = 0;
+      zoomSlider.value = '100';
       this.render();
     });
-    zoomBar.append(zoomIn, zoomOut, zoomReset);
+
+    zoomBar.append(zoomLabel, zoomSlider, zoomLabelPlus, zoomReset);
+    this._zoomSlider = zoomSlider;
     this.container.appendChild(zoomBar);
 
     // Mouse interactions
