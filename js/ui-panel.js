@@ -1,6 +1,7 @@
 // Side panel: buttons, status, branch info, move list
 import { COLOR_TEXT, COLOR_TEXT_DIM, COLOR_BTN_ACTIVE, UNICODE_PIECES } from './constants.js';
 import { GameNode } from './game-tree.js';
+import { forceLoadFen } from './board-utils.js';
 import { t, onLangChange } from './i18n.js';
 import { ravToTree, treeToRAV } from './pgn-rav.js';
 import { encodeGameURL, downloadPGN } from './sharing.js';
@@ -845,12 +846,16 @@ export class UIPanel {
   }
 
   _clearBoard() {
-    const chess = this.state.chess;
-    // Remove all pieces by loading an empty board FEN
-    chess.load('8/8/8/8/8/8/8/8 w - - 0 1');
-    this.state.resetTree(chess.fen());
+    const emptyFen = '8/8/8/8/8/8/8/8 w - - 0 1';
+    forceLoadFen(this.state.chess, emptyFen);
+    this.state.treeRoot = new GameNode(emptyFen);
+    this.state.currentNode = this.state.treeRoot;
+    this.state.lastMove = null;
+    this.state.selectedSq = null;
+    this.state.legalDests = new Set();
+    this.state.bestMoveHint = null;
+    this.state.invalidateTreeLayout();
     this.state.status = 'Board cleared';
     this.state.emit('boardChanged');
-    this.state.emit('treeChanged');
   }
 }
