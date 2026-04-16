@@ -270,14 +270,15 @@ export class UIPanel {
     }
 
     const types = ['k', 'q', 'r', 'b', 'n', 'p'];
+    const starting = { k: 1, q: 1, r: 2, b: 2, n: 2, p: 8 };
 
-    // Show all pieces for each color, always visible, with count on board
+    // Show all pieces for each color, with count captured (off the board)
     for (const color of ['w', 'b']) {
       const row = document.createElement('div');
       row.className = 'captured-row';
 
       for (const pt of types) {
-        const count = onBoard[color][pt];
+        const count = Math.max(0, starting[pt] - onBoard[color][pt]);
 
         const cell = document.createElement('div');
         cell.className = 'captured-cell';
