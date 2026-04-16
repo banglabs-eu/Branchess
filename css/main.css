@@ -657,11 +657,37 @@ body {
   position: fixed;
   z-index: 700;
   background: var(--panel-bg);
-  border: 1px solid #3a3a3a;
+  border: 2px solid #555;
   border-radius: 8px;
   min-width: 220px;
-  padding: 4px 0;
+  padding: 0;
   box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+
+.menu-title-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 10px;
+  cursor: move;
+  user-select: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  border-bottom: 1px solid #3a3a3a;
+}
+
+.menu-close-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+}
+.menu-close-btn:hover {
+  color: var(--text);
 }
 
 .menu-section-title {

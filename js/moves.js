@@ -112,7 +112,9 @@ export class MoveHandler {
           // Dragging off the board removes the piece
           if (this._dragFromSq && !sqEl) {
             this._forceRemove(this._dragFromSq);
-            bang(e.clientX, e.clientY);
+            if (document.documentElement.classList.contains('theme-banglabs')) {
+              bang(e.clientX, e.clientY);
+            }
             this.state.selectedSq = null;
             this.state.legalDests = new Set();
             this.state.emit('boardChanged');

@@ -275,8 +275,12 @@ if (localStorage.getItem('branchess-theme') === 'banglabs') {
   helpThemeBtn.textContent = 'Theme: Classic';
 }
 
-// Fireworks on checkmate
+// Fireworks on checkmate (Bang Labs theme only)
+function isBangLabsTheme() {
+  return document.documentElement.classList.contains('theme-banglabs');
+}
 state.on('boardChanged', () => {
+  if (!isBangLabsTheme()) return;
   if (state.gameOver && state.status && state.status.includes('Checkmate')) {
     fireworksShow();
   }

@@ -176,6 +176,21 @@ export class UIPanel {
     menu.className = 'hamburger-menu';
     menu.style.display = 'none';
 
+    // Title bar with close button
+    const titleBar = document.createElement('div');
+    titleBar.className = 'menu-title-bar';
+    const titleText = document.createElement('span');
+    titleText.textContent = 'Menu';
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'menu-close-btn';
+    closeBtn.textContent = '\u00d7';
+    closeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this._closeMenu();
+    });
+    titleBar.append(titleText, closeBtn);
+    menu.appendChild(titleBar);
+
     // Engine section
     this._addMenuSection(menu, t('engine'));
     this._addMenuItem(menu, t('bestWhite'), 'Space', () => this.moveHandler.showBestMove('w'));
@@ -190,7 +205,25 @@ export class UIPanel {
     this._addMenuItem(menu, t('rotateBoard'), 'R', () => this.state.rotateBoard());
     this._addMenuItem(menu, t('resetBoard'), 'N', () => this.state.newGame());
 
-    // Stop clicks inside menu from propagating to the close handler
+    // Make menu draggable by title bar
+    let dragging = false, dx, dy;
+    titleBar.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      dragging = true;
+      const r = menu.getBoundingClientRect();
+      menu.style.left = r.left + 'px';
+      menu.style.top = r.top + 'px';
+      menu.style.transform = 'none';
+      dx = e.clientX - r.left;
+      dy = e.clientY - r.top;
+    });
+    window.addEventListener('mousemove', (e) => {
+      if (!dragging) return;
+      menu.style.left = (e.clientX - dx) + 'px';
+      menu.style.top = (e.clientY - dy) + 'px';
+    });
+    window.addEventListener('mouseup', () => { dragging = false; });
+
     menu.addEventListener('click', (e) => e.stopPropagation());
 
     return menu;
@@ -236,20 +269,14 @@ export class UIPanel {
       const rect = this._hamburgerBtn.getBoundingClientRect();
       this._menuEl.style.left = rect.left + 'px';
       this._menuEl.style.top = rect.bottom + 4 + 'px';
+      this._menuEl.style.transform = 'none';
       this._menuEl.style.display = '';
-      // Close on next click outside
-      this._menuCloseHandler = () => this._closeMenu();
-      setTimeout(() => document.addEventListener('click', this._menuCloseHandler, { once: true }), 0);
     }
   }
 
   _closeMenu() {
     if (!this._menuEl) return;
     this._menuEl.style.display = 'none';
-    if (this._menuCloseHandler) {
-      document.removeEventListener('click', this._menuCloseHandler);
-      this._menuCloseHandler = null;
-    }
   }
 
   _updateCapturedPieces() {
