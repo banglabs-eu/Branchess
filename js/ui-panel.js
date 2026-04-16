@@ -11,7 +11,7 @@ export class UIPanel {
     this.container = container;
     this.treeAreaEl = document.getElementById('tree-area');
     this.infoAreaEl = document.getElementById('info-area');
-    this.boardAreaEl = document.getElementById('board-area');
+    this.boardAreaEl = document.getElementById('board-area-row');
     this.state = state;
     this.moveHandler = moveHandler;
     this._build();

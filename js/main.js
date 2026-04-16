@@ -318,7 +318,7 @@ function makeDraggable(el, handleSelector) {
 
   el.addEventListener('mousedown', (e) => {
     if (handleSelector && !e.target.closest(handleSelector)) return;
-    if (e.target.closest('.square, .move-input, .note-area, .move-list, .captured-cell, .captured-tray, input, textarea, button, select')) return;
+    if (e.target.closest('.square, .move-input, .note-area, .move-list, .captured-cell, .captured-tray, .resize-bar, input, textarea, button, select')) return;
     e.preventDefault();
     dragging = true;
     const r = el.getBoundingClientRect();
@@ -346,19 +346,36 @@ const infoArea = document.getElementById('info-area');
 
 makeDraggable(boardArea);
 
-// --- Resizable board: sync --board-size when boardArea is CSS-resized ---
-const resizeObs = new ResizeObserver(() => {
-  const areaRect = boardArea.getBoundingClientRect();
-  // Subtract tray, buttons, info panel widths and padding from available space
-  const tray = boardArea.querySelector('.captured-tray');
-  const btnBox = boardArea.querySelector('.btn-box');
-  const usedW = (tray ? tray.offsetWidth : 0) + (btnBox ? btnBox.offsetWidth : 0) + (infoArea ? infoArea.offsetWidth : 0) + 16;
-  const availW = areaRect.width - usedW;
-  const availH = areaRect.height - 16; // padding
-  const newSize = Math.max(80, Math.min(availW, availH));
+// --- Resizable board via bottom resize bar ---
+const resizeBar = document.createElement('div');
+resizeBar.className = 'resize-bar';
+boardArea.appendChild(resizeBar);
+
+let resizing = false, resizeStartY, resizeStartSize;
+
+resizeBar.addEventListener('mousedown', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  resizing = true;
+  resizeStartY = e.clientY;
+  resizeStartSize = boardContainer.getBoundingClientRect().width;
+  document.body.style.cursor = 'ns-resize';
+});
+
+window.addEventListener('mousemove', (e) => {
+  if (!resizing) return;
+  e.preventDefault();
+  const dy = e.clientY - resizeStartY;
+  const newSize = Math.max(80, resizeStartSize + dy);
   document.documentElement.style.setProperty('--board-size', newSize + 'px');
 });
-resizeObs.observe(boardArea);
+
+window.addEventListener('mouseup', () => {
+  if (resizing) {
+    resizing = false;
+    document.body.style.cursor = '';
+  }
+});
 
 // Auto-enter fullscreen tree mode on load
 requestAnimationFrame(() => {
