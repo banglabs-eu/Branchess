@@ -56,7 +56,7 @@ const boardSetupPanel = new BoardSetupPanel(boardSetupContainer, panelContainer,
 const boardWrap = document.getElementById('board-wrap');
 let boardLastClick = 0;
 boardWrap.addEventListener('mousedown', (e) => {
-  if (e.target.closest('.btn-area, .panel-btn, .move-list, .move-input')) return;
+  if (e.target.closest('.panel-btn, .move-list, .move-input, .hamburger-menu')) return;
   const now = Date.now();
   if (now - boardLastClick < 300 && treeView._fullscreen) {
     treeView._toggleFullscreen(e);
@@ -152,10 +152,62 @@ boardContainer.addEventListener('wheel', (e) => {
   else if (e.deltaY < 0) state.goBack();
 }, { passive: false });
 
+// Board keyboard focus — arrow keys navigate squares when board is focused
+// Only activate keyboard mode on Tab focus (not mouse click focus)
+let boardFocusedByKeyboard = false;
+boardContainer.addEventListener('mousedown', () => { boardFocusedByKeyboard = false; });
+boardContainer.addEventListener('focus', () => {
+  if (!boardFocusedByKeyboard) return;
+  state.boardFocused = true;
+  if (!state.cursorSq) {
+    state.cursorSq = state.lastMove ? state.lastMove.to : 'e4';
+  }
+  state.emit('boardChanged');
+});
+boardContainer.addEventListener('blur', () => {
+  state.setBoardFocus(false);
+  boardFocusedByKeyboard = false;
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Tab') boardFocusedByKeyboard = true;
+}, true);
+
+function handleBoardArrowKey(key) {
+  if (!state.cursorSq) {
+    state.cursorSq = 'e4';
+    state.emit('boardChanged');
+    return;
+  }
+  const curIdx = boardView._sqIndex(state.cursorSq);
+  let row = Math.floor(curIdx / 8);
+  let col = curIdx % 8;
+
+  if (key === 'ArrowUp') row = Math.max(0, row - 1);
+  else if (key === 'ArrowDown') row = Math.min(7, row + 1);
+  else if (key === 'ArrowLeft') col = Math.max(0, col - 1);
+  else if (key === 'ArrowRight') col = Math.min(7, col + 1);
+
+  state.cursorSq = boardView.squares[row * 8 + col].dataset.square;
+  state.emit('boardChanged');
+}
+
 document.addEventListener('keydown', (e) => {
   // Help overlay escape
   if (e.key === 'Escape' && helpOverlay.classList.contains('active')) {
     helpOverlay.classList.remove('active');
+    return;
+  }
+
+  // Close hamburger menu on Escape
+  if (e.key === 'Escape' && uiPanel._menuEl && uiPanel._menuEl.style.display !== 'none') {
+    uiPanel._closeMenu();
+    return;
+  }
+
+  // Exit board focus on Escape
+  if (e.key === 'Escape' && state.boardFocused) {
+    state.setBoardFocus(false);
+    boardContainer.blur();
     return;
   }
 
@@ -167,20 +219,40 @@ document.addEventListener('keydown', (e) => {
   if (state.showSaveDialog || state.showLoadDialog) return;
   if (state.promotingFrom !== null) return;
 
-  if (e.key === 'ArrowUp') { state.goBack(); }
-  else if (e.key === 'ArrowDown') { state.goForward(); }
-  else if (e.key === 'ArrowLeft') { state.switchBranch(-1); }
-  else if (e.key === 'ArrowRight') { state.switchBranch(1); }
-  else if (e.key === 'u' || e.key === 'U') { state.undo(); }
+  // Arrow keys: board cursor when focused, tree navigation otherwise
+  if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+    e.preventDefault();
+    if (state.boardFocused) {
+      handleBoardArrowKey(e.key);
+    } else {
+      if (e.key === 'ArrowUp') state.goBack();
+      else if (e.key === 'ArrowDown') state.goForward();
+      else if (e.key === 'ArrowLeft') state.switchBranch(-1);
+      else if (e.key === 'ArrowRight') state.switchBranch(1);
+    }
+    return;
+  }
+
+  // Enter/Space on board: select piece or make move
+  if ((e.key === 'Enter' || e.key === ' ') && state.boardFocused && state.cursorSq) {
+    e.preventDefault();
+    if (state.selectedSq !== null && state.selectedSq !== state.cursorSq) {
+      moveHandler._tryMove(state.selectedSq, state.cursorSq);
+    } else {
+      moveHandler._handleBoardClick(state.cursorSq);
+    }
+    return;
+  }
+
+  if (e.key === 'u' || e.key === 'U') { state.undo(); }
   else if (e.key === 'n' || e.key === 'N') { state.newGame(); }
   else if (e.key === ' ') { e.preventDefault(); moveHandler.showBestMove(state.chess.turn()); }
   else if (e.key === 'h' || e.key === 'H') {
-    // Toggle legal move hints
     boardContainer.classList.toggle('hide-hints');
   }
+  else if (e.key === 'r' || e.key === 'R') { state.rotateBoard(); }
   else if (e.key === 'e' || e.key === 'E') {
     if (state.setupMode) {
-      // Exit setup
       setupPanel._exitSetup();
     } else {
       uiPanel._enterSetupMode();
@@ -188,10 +260,9 @@ document.addEventListener('keydown', (e) => {
   }
   else if (e.key === 's' && e.ctrlKey) {
     e.preventDefault();
-    state.emit('openSaveDialog');
+    state.emit('openFileDialog');
   }
   else if (e.key === 'v' && e.ctrlKey) {
-    // Let Paste PGN handle it
     uiPanel._pastePGN();
   }
   else if (e.key === '?') {
@@ -213,7 +284,7 @@ function isBangLabsTheme() {
 // Click off the board
 document.addEventListener('click', (e) => {
   if (!isBangLabsTheme()) return;
-  if (e.target.closest('#board, #panel, #setup-panel, #overlay, #help-overlay, #help-btn, .panel-btn, .btn-area, .dialog')) return;
+  if (e.target.closest('#board, #panel, #setup-panel, #overlay, #help-overlay, #help-btn, .panel-btn, .hamburger-menu, .dialog')) return;
   bang(e.clientX, e.clientY);
 });
 

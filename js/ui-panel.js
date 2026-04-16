@@ -35,18 +35,33 @@ export class UIPanel {
     this.container.innerHTML = '';
     this.container.classList.add('panel');
 
-    // Title row with help button
+    // Title row with hamburger + help buttons
     const titleRow = document.createElement('div');
     titleRow.className = 'panel-title-row';
     const title = document.createElement('div');
     title.className = 'panel-title';
     title.textContent = 'Branchess {\u2657}';
+
+    const hamburgerBtn = document.createElement('button');
+    hamburgerBtn.className = 'hamburger-btn';
+    hamburgerBtn.ariaLabel = 'Menu';
+    hamburgerBtn.textContent = '\u2630';
+    hamburgerBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this._toggleMenu();
+    });
+
     const helpBtn = document.createElement('button');
     helpBtn.id = 'help-btn';
     helpBtn.className = 'help-btn';
     helpBtn.ariaLabel = 'Help';
     helpBtn.textContent = '?';
-    titleRow.append(title, helpBtn);
+    titleRow.append(title, hamburgerBtn, helpBtn);
+
+    // Hamburger dropdown menu
+    this._menuEl = this._buildMenu();
+    titleRow.appendChild(this._menuEl);
+
     this.container.appendChild(titleRow);
 
     // Status
@@ -108,43 +123,6 @@ export class UIPanel {
     this.moveInput.addEventListener('blur', () => this._exitMoveInput());
     this.moveInput.addEventListener('input', () => this._validateMoveInput());
 
-    // Buttons
-    const btnArea = document.createElement('div');
-    btnArea.className = 'btn-area';
-
-    // --- Engine (best-move only) ---
-    const engineSection = this._section(t('engine'));
-    const engineRow = this._btnRow();
-    this._addBtn(engineRow, t('bestWhite'), () => this.moveHandler.showBestMove('w'), 'half');
-    this._addBtn(engineRow, t('bestBlack'), () => this.moveHandler.showBestMove('b'), 'half');
-    engineSection.appendChild(engineRow);
-    btnArea.appendChild(engineSection);
-
-    // --- Save / Load ---
-    const gamesSection = this._section(t('games'));
-    const gamesRow = this._btnRow();
-    this._addBtn(gamesRow, t('save'), () => this.state.emit('openSaveMenu'), 'half');
-    this._addBtn(gamesRow, t('load'), () => this.state.emit('openLoadMenu'), 'half');
-    gamesSection.appendChild(gamesRow);
-    btnArea.appendChild(gamesSection);
-
-    // --- Board ---
-    const boardSection = this._section(t('board'));
-    const boardRow = this._btnRow();
-    this._addBtn(boardRow, t('rotateBoard'), () => this.state.rotateBoard(), 'half');
-    this._addBtn(boardRow, t('setupBoard'), () => this._enterSetupMode(), 'half');
-    boardSection.appendChild(boardRow);
-    this._addBtn(boardSection, t('resetBoard'), () => this.state.newGame());
-    btnArea.appendChild(boardSection);
-
-    this.container.appendChild(btnArea);
-
-    // Keyboard hints
-    const hints = document.createElement('div');
-    hints.className = 'hints';
-    hints.textContent = 'U:undo \u2190\u2192\u2191\u2193:nav Scroll:plies Space:best Ctrl+V:pgn';
-    this.container.appendChild(hints);
-
     this._updateStatus();
     this._updateMoveList();
   }
@@ -172,6 +150,86 @@ export class UIPanel {
     btn.addEventListener('click', onClick);
     parent.appendChild(btn);
     return btn;
+  }
+
+  // --- Hamburger menu ---
+
+  _buildMenu() {
+    const menu = document.createElement('div');
+    menu.className = 'hamburger-menu';
+    menu.style.display = 'none';
+
+    // Engine section
+    this._addMenuSection(menu, t('engine'));
+    this._addMenuItem(menu, t('bestWhite'), 'Space', () => this.moveHandler.showBestMove('w'));
+    this._addMenuItem(menu, t('bestBlack'), '', () => this.moveHandler.showBestMove('b'));
+
+    // File section
+    this._addMenuSection(menu, t('games'));
+    this._addMenuItem(menu, 'Save / Load...', 'Ctrl+S', () => this.state.emit('openFileDialog'));
+
+    // Board section
+    this._addMenuSection(menu, t('board'));
+    this._addMenuItem(menu, t('rotateBoard'), 'R', () => this.state.rotateBoard());
+    this._addMenuItem(menu, t('setupBoard'), 'E', () => this._enterSetupMode());
+    this._addMenuItem(menu, t('resetBoard'), 'N', () => this.state.newGame());
+
+    // Stop clicks inside menu from propagating to the close handler
+    menu.addEventListener('click', (e) => e.stopPropagation());
+
+    return menu;
+  }
+
+  _addMenuSection(parent, title) {
+    const el = document.createElement('div');
+    el.className = 'menu-section-title';
+    el.textContent = title;
+    parent.appendChild(el);
+  }
+
+  _addMenuItem(parent, label, shortcut, onClick) {
+    const item = document.createElement('div');
+    item.className = 'menu-item';
+
+    const labelSpan = document.createElement('span');
+    labelSpan.textContent = label;
+
+    item.appendChild(labelSpan);
+
+    if (shortcut) {
+      const shortcutSpan = document.createElement('span');
+      shortcutSpan.className = 'menu-shortcut';
+      shortcutSpan.textContent = shortcut;
+      item.appendChild(shortcutSpan);
+    }
+
+    item.addEventListener('click', () => {
+      this._closeMenu();
+      onClick();
+    });
+    parent.appendChild(item);
+  }
+
+  _toggleMenu() {
+    if (!this._menuEl) return;
+    const open = this._menuEl.style.display !== 'none';
+    if (open) {
+      this._closeMenu();
+    } else {
+      this._menuEl.style.display = '';
+      // Close on next click outside
+      this._menuCloseHandler = () => this._closeMenu();
+      setTimeout(() => document.addEventListener('click', this._menuCloseHandler, { once: true }), 0);
+    }
+  }
+
+  _closeMenu() {
+    if (!this._menuEl) return;
+    this._menuEl.style.display = 'none';
+    if (this._menuCloseHandler) {
+      document.removeEventListener('click', this._menuCloseHandler);
+      this._menuCloseHandler = null;
+    }
   }
 
   _updateStatus() {

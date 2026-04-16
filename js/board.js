@@ -18,6 +18,8 @@ export class BoardView {
   _build() {
     this.container.innerHTML = '';
     this.container.classList.add('chess-board');
+    this.container.tabIndex = 0;
+    this.container.style.outline = 'none';
     this.squares = [];
 
     const flipped = this.state.playerColor === 'b';
@@ -126,7 +128,7 @@ export class BoardView {
       // Remove piece spans and overlays
       const piece = sq.querySelector('.piece');
       if (piece) piece.remove();
-      sq.classList.remove('highlight-selected', 'highlight-legal', 'highlight-last', 'highlight-check', 'highlight-legal-capture', 'highlight-best');
+      sq.classList.remove('highlight-selected', 'highlight-legal', 'highlight-last', 'highlight-check', 'highlight-legal-capture', 'highlight-best', 'highlight-cursor');
     }
 
     // Place pieces
@@ -210,6 +212,12 @@ export class BoardView {
       } else {
         this.squares[idx].classList.add('highlight-legal');
       }
+    }
+
+    // Keyboard cursor
+    if (this.state.cursorSq !== null) {
+      const idx = this._sqIndex(this.state.cursorSq);
+      this.squares[idx].classList.add('highlight-cursor');
     }
 
     // Turn indicator bars

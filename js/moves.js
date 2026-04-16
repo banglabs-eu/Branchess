@@ -158,6 +158,9 @@ export class MoveHandler {
     // Invalidate any pending analysis result so it can't overwrite state later
     this._analyzeRequestId = (this._analyzeRequestId || 0) + 1;
 
+    // Clear keyboard cursor on mouse interaction
+    state.cursorSq = null;
+
     // Any board interaction clears the best-move suggestion
     if (state.bestMoveHint) {
       state.bestMoveHint = null;

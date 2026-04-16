@@ -71,9 +71,19 @@ export class GameState extends EventEmitter {
     this.treeScrollX = 0;
     this.treeScrollY = 0;
     this.treeZoom = 1;
+
+    // Board keyboard navigation
+    this.boardFocused = false;
+    this.cursorSq = null; // algebraic notation, e.g. 'e4'
   }
 
   fen() { return this.chess.fen(); }
+
+  setBoardFocus(focused) {
+    this.boardFocused = focused;
+    if (!focused) { this.cursorSq = null; }
+    this.emit('boardChanged');
+  }
 
   getTreeLayout() {
     if (this._treeLayoutDirty) {

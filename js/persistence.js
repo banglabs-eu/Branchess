@@ -109,6 +109,7 @@ export class DialogManager {
     state.on('openSaveMenu', () => this._showSaveMenu());
     state.on('openLoadMenu', () => this._showLoadMenu());
     state.on('openLoadPGNDialog', () => this._showLoadPGNDialog());
+    state.on('openFileDialog', () => this._showFileDialog());
   }
 
   _close() {
@@ -881,6 +882,19 @@ export class DialogManager {
     this._showChoiceMenu(t('loadMenuTitle'), items);
   }
 
+  _showFileDialog() {
+    const items = [
+      { label: t('savePGN'), desc: t('savePGNDesc'), event: 'saveAsPGN' },
+      { label: t('saveURL'), desc: t('saveURLDesc'), event: 'saveAsURL' },
+      { label: t('saveMermaid'), desc: t('saveMermaidDesc'), event: 'saveAsMermaid' },
+      { separator: true },
+      { label: t('loadLibrary'), desc: t('loadLibraryDesc'), event: 'openLibraryDialog', premium: true },
+      { label: t('loadPGN'), desc: t('loadPGNDesc'), event: 'loadAsPGN' },
+      { label: t('loadMermaid'), desc: t('loadMermaidDesc'), event: 'loadAsMermaid' },
+    ];
+    this._showChoiceMenu('Save / Load', items);
+  }
+
   _showLoadPGNDialog() {
     this._showOverlay();
     this.overlay.innerHTML = '';
@@ -994,6 +1008,14 @@ export class DialogManager {
     list.className = 'load-list';
 
     for (const item of items) {
+      if (item.separator) {
+        const sep = document.createElement('div');
+        sep.style.borderTop = '1px solid #3a3a3a';
+        sep.style.margin = '4px 0';
+        list.appendChild(sep);
+        continue;
+      }
+
       const el = document.createElement('div');
       el.className = 'load-item';
       el.style.cursor = 'pointer';
