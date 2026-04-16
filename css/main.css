@@ -637,6 +637,48 @@ html, body {
   opacity: 0.6;
 }
 
+/* Panel drag handles */
+.panel-drag-handle {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #555;
+  cursor: grab;
+  border-radius: 3px;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.2s;
+  user-select: none;
+}
+#board-area, #tree-area, #info-area {
+  position: relative;
+}
+#board-area:hover > .panel-drag-handle,
+#tree-area:hover > .panel-drag-handle,
+#info-area:hover > .panel-drag-handle {
+  opacity: 1;
+}
+.panel-drag-handle:hover {
+  color: var(--text);
+  background: var(--btn);
+}
+.panel-drag-handle:active {
+  cursor: grabbing;
+}
+.panel-dragging {
+  opacity: 0.5;
+}
+.panel-drag-over {
+  outline: 2px dashed rgba(100, 200, 255, 0.6);
+  outline-offset: -2px;
+}
+
 /* Board keyboard cursor */
 .highlight-cursor {
   outline: 3px solid rgba(100, 200, 255, 0.8);

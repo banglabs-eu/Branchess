@@ -324,5 +324,88 @@ if (hashData) {
   }
 }
 
+// --- Draggable panel swap ---
+const panels = [
+  document.getElementById('board-area'),
+  document.getElementById('tree-area'),
+  document.getElementById('info-area'),
+];
+
+// Default grid areas
+const defaultAreas = { 'board-area': 'board', 'tree-area': 'tree', 'info-area': 'info' };
+
+// Restore saved layout
+const savedLayout = localStorage.getItem('branchess-panel-layout');
+if (savedLayout) {
+  try {
+    const layout = JSON.parse(savedLayout);
+    for (const panel of panels) {
+      if (layout[panel.id]) panel.style.gridArea = layout[panel.id];
+    }
+  } catch { /* ignore */ }
+}
+
+function saveLayout() {
+  const layout = {};
+  for (const panel of panels) {
+    layout[panel.id] = panel.style.gridArea || defaultAreas[panel.id];
+  }
+  localStorage.setItem('branchess-panel-layout', JSON.stringify(layout));
+}
+
+let dragSource = null;
+
+for (const panel of panels) {
+  // Add drag handle
+  const handle = document.createElement('div');
+  handle.className = 'panel-drag-handle';
+  handle.textContent = '\u2725';
+  handle.draggable = true;
+  handle.title = 'Drag to swap panels';
+  panel.prepend(handle);
+
+  handle.addEventListener('dragstart', (e) => {
+    dragSource = panel;
+    panel.classList.add('panel-dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', panel.id);
+  });
+
+  handle.addEventListener('dragend', () => {
+    panel.classList.remove('panel-dragging');
+    for (const p of panels) p.classList.remove('panel-drag-over');
+    dragSource = null;
+  });
+
+  panel.addEventListener('dragover', (e) => {
+    if (!dragSource || dragSource === panel) return;
+    // Only accept panel swaps (not piece tray drags)
+    if (!e.dataTransfer.types.includes('text/plain')) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    panel.classList.add('panel-drag-over');
+  });
+
+  panel.addEventListener('dragleave', () => {
+    panel.classList.remove('panel-drag-over');
+  });
+
+  panel.addEventListener('drop', (e) => {
+    e.preventDefault();
+    panel.classList.remove('panel-drag-over');
+    if (!dragSource || dragSource === panel) return;
+    // Don't swap if this was a piece-tray drag
+    const sourceId = e.dataTransfer.getData('text/plain');
+    if (!panels.some(p => p.id === sourceId)) return;
+
+    // Swap grid areas
+    const srcArea = dragSource.style.gridArea || defaultAreas[dragSource.id];
+    const tgtArea = panel.style.gridArea || defaultAreas[panel.id];
+    dragSource.style.gridArea = tgtArea;
+    panel.style.gridArea = srcArea;
+    saveLayout();
+  });
+}
+
 // Page unload
 window.addEventListener('beforeunload', () => engine.terminate());
