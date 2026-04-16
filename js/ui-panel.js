@@ -93,15 +93,15 @@ export class UIPanel {
       this.treeContainer.appendChild(treeHint);
     }
 
-    // --- Info area (bottom-left quarter) ---
-    this.infoAreaEl.innerHTML = '';
-
-    // Piece tray (left half of info area)
+    // Piece tray (vertical, beside the board)
+    if (this.capturedEl) this.capturedEl.remove();
     this.capturedEl = document.createElement('div');
     this.capturedEl.className = 'captured-tray';
-    this.infoAreaEl.appendChild(this.capturedEl);
+    this.boardAreaEl.appendChild(this.capturedEl);
 
-    // Moves section (right half of info area)
+    // --- Info area ---
+    this.infoAreaEl.innerHTML = '';
+
     const movesSection = document.createElement('div');
     movesSection.className = 'moves-section';
 

@@ -526,29 +526,26 @@ html, body {
   text-align: center;
 }
 
-/* Info area: pieces left, moves right */
+/* Info area: moves fill it */
 .moves-section {
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-left: 1px solid #3a3a3a;
   padding: 4px 6px;
 }
 
-/* Piece tray */
+/* Piece tray — vertical strip beside the board */
 .captured-tray {
-  padding: 4px 6px;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 4px;
-  min-width: 0;
+  gap: 2px;
+  padding: 2px;
+  align-self: stretch;
 }
 .captured-row {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
   align-items: center;
 }
 .captured-cell {
@@ -557,7 +554,7 @@ html, body {
   align-items: center;
   gap: 0;
   cursor: grab;
-  padding: 2px 1px;
+  padding: 1px 2px;
   border-radius: 3px;
   transition: background 0.12s;
 }
@@ -565,12 +562,12 @@ html, body {
   background: var(--btn-hover);
 }
 .captured-piece {
-  font-size: calc(var(--app-size) / 24);
+  font-size: calc(var(--board-size) / 8 * 0.5);
   line-height: 1;
   pointer-events: none;
 }
 .captured-count {
-  font-size: 9px;
+  font-size: 8px;
   color: var(--text-dim);
   font-family: 'JetBrains Mono', monospace;
   line-height: 1;
