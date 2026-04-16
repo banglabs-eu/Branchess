@@ -8,6 +8,9 @@ import { encodeGameURL, downloadPGN } from './sharing.js';
 export class UIPanel {
   constructor(container, state, moveHandler) {
     this.container = container;
+    this.treeAreaEl = document.getElementById('tree-area');
+    this.infoAreaEl = document.getElementById('info-area');
+    this.boardAreaEl = document.getElementById('board-area');
     this.state = state;
     this.moveHandler = moveHandler;
     this._build();
@@ -32,15 +35,12 @@ export class UIPanel {
   }
 
   _build() {
-    this.container.innerHTML = '';
-    this.container.classList.add('panel');
+    // --- Tree area (right half) ---
+    this.treeAreaEl.innerHTML = '';
 
-    // Title row with hamburger + help buttons
+    // Title row with hamburger + help
     const titleRow = document.createElement('div');
     titleRow.className = 'panel-title-row';
-    const title = document.createElement('div');
-    title.className = 'panel-title';
-    title.textContent = 'Branchess {\u2657}';
 
     this._hamburgerBtn = document.createElement('button');
     this._hamburgerBtn.className = 'hamburger-btn';
@@ -50,32 +50,31 @@ export class UIPanel {
       e.stopPropagation();
       this._toggleMenu();
     });
-    const hamburgerBtn = this._hamburgerBtn;
+
+    const title = document.createElement('div');
+    title.className = 'panel-title';
+    title.textContent = 'Branchess {\u2657}';
 
     const helpBtn = document.createElement('button');
     helpBtn.id = 'help-btn';
     helpBtn.className = 'help-btn';
     helpBtn.ariaLabel = 'Help';
     helpBtn.textContent = '?';
-    titleRow.append(hamburgerBtn, title, helpBtn);
-    this.container.appendChild(titleRow);
 
-    // Hamburger dropdown menu (appended to body to escape panel overflow)
+    titleRow.append(this._hamburgerBtn, title, helpBtn);
+    this.treeAreaEl.appendChild(titleRow);
+
+    // Hamburger dropdown menu
     if (this._menuEl) this._menuEl.remove();
     this._menuEl = this._buildMenu();
     document.body.appendChild(this._menuEl);
 
-    // Piece tray (draggable pieces)
-    this.capturedEl = document.createElement('div');
-    this.capturedEl.className = 'captured-tray';
-    this.container.appendChild(this.capturedEl);
-
-    // Tree container — preserve across rebuilds so TreeView stays attached
+    // Tree container
     if (!this.treeContainer) {
       this.treeContainer = document.createElement('div');
       this.treeContainer.className = 'tree-container';
     }
-    this.container.appendChild(this.treeContainer);
+    this.treeAreaEl.appendChild(this.treeContainer);
 
     // Tree hints
     if (!localStorage.getItem('branchess-hints-dismissed')) {
@@ -94,22 +93,39 @@ export class UIPanel {
       this.treeContainer.appendChild(treeHint);
     }
 
-    // Move list + branch info (bottom section)
+    // Status bar (bottom of tree area)
+    this.statusEl = document.createElement('div');
+    this.statusEl.className = 'panel-status';
+    this.treeAreaEl.appendChild(this.statusEl);
+
+    // --- Info area (bottom-left quarter) ---
+    this.infoAreaEl.innerHTML = '';
+
+    // Piece tray (left half of info area)
+    this.capturedEl = document.createElement('div');
+    this.capturedEl.className = 'captured-tray';
+    this.infoAreaEl.appendChild(this.capturedEl);
+
+    // Moves section (right half of info area)
+    const movesSection = document.createElement('div');
+    movesSection.className = 'moves-section';
+
     this.branchInfo = document.createElement('div');
     this.branchInfo.className = 'branch-info';
-    this.container.appendChild(this.branchInfo);
+    movesSection.appendChild(this.branchInfo);
 
     this.moveList = document.createElement('div');
     this.moveList.className = 'move-list';
-    this.container.appendChild(this.moveList);
+    movesSection.appendChild(this.moveList);
 
-    // Move input: appears on double-click of move list
     this.moveInput = document.createElement('input');
     this.moveInput.type = 'text';
     this.moveInput.className = 'move-input';
     this.moveInput.placeholder = 'e.g. e4 e5 or Nf3';
     this.moveInput.style.display = 'none';
-    this.container.appendChild(this.moveInput);
+    movesSection.appendChild(this.moveInput);
+
+    this.infoAreaEl.appendChild(movesSection);
 
     this.moveList.addEventListener('dblclick', () => this._enterMoveInput());
     this.moveInput.addEventListener('keydown', (e) => {
@@ -123,11 +139,6 @@ export class UIPanel {
     });
     this.moveInput.addEventListener('blur', () => this._exitMoveInput());
     this.moveInput.addEventListener('input', () => this._validateMoveInput());
-
-    // Status bar (slim, at bottom)
-    this.statusEl = document.createElement('div');
-    this.statusEl.className = 'panel-status';
-    this.container.appendChild(this.statusEl);
 
     this._updateStatus();
     this._updateCapturedPieces();

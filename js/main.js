@@ -138,9 +138,8 @@ state.on('promotionChoice', (pieceType) => {
   moveHandler.handlePromotion(pieceType);
 });
 
-// Toggle panel visibility in setup mode
+// Toggle setup panel visibility in setup mode
 state.on('setupModeChanged', () => {
-  panelContainer.style.display = state.setupMode ? 'none' : '';
   setupContainer.style.display = state.setupMode ? '' : 'none';
 });
 
@@ -284,7 +283,7 @@ function isBangLabsTheme() {
 // Click off the board
 document.addEventListener('click', (e) => {
   if (!isBangLabsTheme()) return;
-  if (e.target.closest('#board, #panel, #setup-panel, #overlay, #help-overlay, #help-btn, .panel-btn, .hamburger-menu, .dialog')) return;
+  if (e.target.closest('#board, #panel, #tree-area, #info-area, #setup-panel, #overlay, #help-overlay, #help-btn, .panel-btn, .hamburger-menu, .dialog')) return;
   bang(e.clientX, e.clientY);
 });
 
