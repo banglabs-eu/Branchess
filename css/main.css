@@ -39,21 +39,19 @@ html, body {
   overflow: hidden;
 }
 
-/* Square grid: board top-left, info top-right, tree bottom-half */
+/* Full viewport grid: board left, info+tree right */
 #app {
-  --app-size: min(100vh, 100vw);
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto 1fr;
   grid-template-areas:
     "board info"
-    "tree  tree";
-  width: var(--app-size);
-  height: var(--app-size);
-  margin: 0 auto;
+    "board tree";
+  width: 100vw;
+  height: 100vh;
   background: var(--bg);
   overflow: hidden;
-  --board-size: calc(var(--app-size) / 2 - 16px);
+  --board-size: calc(100vh - 52px);
 }
 
 #board-area {
@@ -566,7 +564,7 @@ html, body {
   background: var(--btn-hover);
 }
 .captured-piece {
-  font-size: calc(var(--app-size) / 24);
+  font-size: 22px;
   line-height: 1;
   pointer-events: none;
 }
