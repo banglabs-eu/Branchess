@@ -108,8 +108,8 @@ export class MoveHandler {
               return;
             }
           }
-          // In board setup mode, dragging off the board removes the piece
-          if (this.state.boardSetupMode && this._dragFromSq && !sqEl) {
+          // Dragging off the board removes the piece
+          if (this._dragFromSq && !sqEl) {
             this._forceRemove(this._dragFromSq);
             this.state.selectedSq = null;
             this.state.legalDests = new Set();

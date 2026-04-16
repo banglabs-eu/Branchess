@@ -1,5 +1,5 @@
 // Side panel: buttons, status, branch info, move list
-import { COLOR_TEXT, COLOR_TEXT_DIM, COLOR_BTN_ACTIVE } from './constants.js';
+import { COLOR_TEXT, COLOR_TEXT_DIM, COLOR_BTN_ACTIVE, UNICODE_PIECES } from './constants.js';
 import { GameNode } from './game-tree.js';
 import { t, onLangChange } from './i18n.js';
 import { ravToTree, treeToRAV } from './pgn-rav.js';
@@ -12,7 +12,7 @@ export class UIPanel {
     this.moveHandler = moveHandler;
     this._build();
 
-    state.on('boardChanged', () => this._updateStatus());
+    state.on('boardChanged', () => { this._updateStatus(); this._updateCapturedPieces(); });
     state.on('treeChanged', () => this._updateMoveList());
     state.on('mermaidExportConfirm', (filename) => this._doMermaidDownload(filename));
     state.on('exportMermaid', () => this._exportMermaid());
@@ -69,6 +69,11 @@ export class UIPanel {
     this.statusEl.className = 'panel-status';
     this.container.appendChild(this.statusEl);
 
+    // Captured pieces tray
+    this.capturedEl = document.createElement('div');
+    this.capturedEl.className = 'captured-tray';
+    this.container.appendChild(this.capturedEl);
+
     // Tree container — preserve across rebuilds so TreeView stays attached
     if (!this.treeContainer) {
       this.treeContainer = document.createElement('div');
@@ -124,6 +129,7 @@ export class UIPanel {
     this.moveInput.addEventListener('input', () => this._validateMoveInput());
 
     this._updateStatus();
+    this._updateCapturedPieces();
     this._updateMoveList();
   }
 
@@ -229,6 +235,58 @@ export class UIPanel {
     if (this._menuCloseHandler) {
       document.removeEventListener('click', this._menuCloseHandler);
       this._menuCloseHandler = null;
+    }
+  }
+
+  _updateCapturedPieces() {
+    if (!this.capturedEl) return;
+    this.capturedEl.innerHTML = '';
+
+    const chess = this.state.chess;
+    const board = chess.board();
+
+    // Count pieces currently on the board
+    const onBoard = { w: { k: 0, q: 0, r: 0, b: 0, n: 0, p: 0 }, b: { k: 0, q: 0, r: 0, b: 0, n: 0, p: 0 } };
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        const p = board[r][c];
+        if (p) onBoard[p.color][p.type]++;
+      }
+    }
+
+    // Starting material
+    const start = { k: 1, q: 1, r: 2, b: 2, n: 2, p: 8 };
+    const types = ['q', 'r', 'b', 'n', 'p'];
+
+    // Build row for each color (pieces captured FROM that color)
+    for (const color of ['b', 'w']) {
+      const row = document.createElement('div');
+      row.className = 'captured-row';
+
+      let hasCaptures = false;
+      for (const t of types) {
+        const taken = Math.max(0, start[t] - onBoard[color][t]);
+        if (taken === 0) continue;
+        hasCaptures = true;
+
+        const cell = document.createElement('div');
+        cell.className = 'captured-cell';
+
+        const icon = document.createElement('span');
+        icon.className = 'captured-piece ' + (color === 'w' ? 'piece-white' : 'piece-black');
+        icon.textContent = UNICODE_PIECES[t];
+
+        const count = document.createElement('span');
+        count.className = 'captured-count';
+        count.textContent = taken;
+
+        cell.append(icon, count);
+        row.appendChild(cell);
+      }
+
+      if (hasCaptures) {
+        this.capturedEl.appendChild(row);
+      }
     }
   }
 
