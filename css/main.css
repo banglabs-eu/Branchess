@@ -780,6 +780,32 @@ body {
 .board-setup-cell:hover { background: var(--btn-hover); }
 .board-setup-cell.palette-selected { background: var(--btn-active); }
 
+/* Transient toast notification */
+#toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(40, 40, 40, 0.95);
+  color: var(--text);
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: clamp(11px, 0.8rem, 14px);
+  font-family: 'Inter', sans-serif;
+  border: 1px solid #555;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+  z-index: 1100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+  max-width: 320px;
+  text-align: center;
+}
+#toast.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
 /* Overlay for dialogs */
 #overlay {
   display: none;

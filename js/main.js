@@ -12,7 +12,7 @@ import { BoardSetupPanel } from './board-setup.js';
 import { DialogManager } from './persistence.js';
 import { bang, fireworksShow } from './bang.js';
 import { LANGUAGES, getLang, setLang, onLangChange, t } from './i18n.js';
-import { decodeGameFromHash, loadStudy } from './sharing.js';
+import { decodeGameFromHash, loadStudy, encodeGameURL } from './sharing.js';
 
 // Small-screen warning dismiss
 const smallScreenOverlay = document.getElementById('small-screen-overlay');
@@ -362,6 +362,57 @@ requestAnimationFrame(() => {
   const treeCont = uiPanel.treeContainer;
   treeCont.classList.add('tree-fullscreen');
   treeView.render();
+});
+
+// --- Live URL sync: rewrite the hash as the game tree grows ---
+const toastEl = document.getElementById('toast');
+let toastTimer = null;
+function showToast(msg, ms = 2400) {
+  if (!toastEl) return;
+  toastEl.textContent = msg;
+  toastEl.classList.add('visible');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('visible'), ms);
+}
+
+let urlSyncReady = false;
+let urlSyncTimer = null;
+let lastUrlTooLong = false;
+
+function syncUrlFromTree() {
+  if (!urlSyncReady) return;
+  const hasMoves = state.treeRoot && state.treeRoot.children && state.treeRoot.children.length > 0;
+  const path = window.location.pathname + window.location.search;
+
+  if (!hasMoves) {
+    if (window.location.hash.startsWith('#g=')) {
+      history.replaceState(null, '', path);
+    }
+    lastUrlTooLong = false;
+    return;
+  }
+
+  const { url, tooLong } = encodeGameURL(state.treeRoot);
+  if (tooLong) {
+    if (window.location.hash.startsWith('#g=')) {
+      history.replaceState(null, '', path);
+    }
+    if (!lastUrlTooLong) showToast('Tree too large to encode in URL — use Share / Export PGN instead');
+    lastUrlTooLong = true;
+    return;
+  }
+  lastUrlTooLong = false;
+  history.replaceState(null, '', url);
+}
+
+state.on('treeChanged', () => {
+  if (urlSyncTimer) clearTimeout(urlSyncTimer);
+  urlSyncTimer = setTimeout(syncUrlFromTree, 150);
+});
+
+// Enable sync after the initial load settles (gives studies time to load async)
+window.addEventListener('load', () => {
+  setTimeout(() => { urlSyncReady = true; }, 400);
 });
 
 // Page unload
