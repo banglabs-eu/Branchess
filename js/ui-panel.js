@@ -284,11 +284,10 @@ export class UIPanel {
     if (open) {
       this._closeMenu();
     } else {
-      // Position below the hamburger button
-      const rect = this._hamburgerBtn.getBoundingClientRect();
-      this._menuEl.style.left = rect.left + 'px';
-      this._menuEl.style.top = rect.bottom + 4 + 'px';
-      this._menuEl.style.transform = 'none';
+      // Centered floating, matching the help (?) overlay
+      this._menuEl.style.left = '50%';
+      this._menuEl.style.top = '60px';
+      this._menuEl.style.transform = 'translateX(-50%)';
       this._menuEl.style.display = '';
     }
   }
